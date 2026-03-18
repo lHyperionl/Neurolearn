@@ -47,10 +47,10 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["Brain Abscess", "Metastasis", "Tumefactive MS"],
         mriImages: [
-            "https://placehold.co/600x600/111111/444444?text=GBM+Axial+T1+C",
-            "https://placehold.co/600x600/111111/444444?text=GBM+Sagittal+T2",
-            "https://placehold.co/600x600/111111/444444?text=GBM+Coronal+FLAIR",
-            "https://placehold.co/600x600/111111/444444?text=GBM+Axial+DWI",
+            "https://placehold.co/600x600/111111/444444.png?text=GBM+Axial+T1+C",
+            "https://placehold.co/600x600/111111/444444.png?text=GBM+Sagittal+T2",
+            "https://placehold.co/600x600/111111/444444.png?text=GBM+Coronal+FLAIR",
+            "https://placehold.co/600x600/111111/444444.png?text=GBM+Axial+DWI",
         ],
     },
     {
@@ -70,9 +70,9 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["Dural Metastasis", "Hemangiopericytoma", "Schwannoma"],
         mriImages: [
-            "https://placehold.co/600x600/111111/444444?text=Meningioma+Axial+T1+C",
-            "https://placehold.co/600x600/111111/444444?text=Meningioma+Coronal+T1+C",
-            "https://placehold.co/600x600/111111/444444?text=Meningioma+Axial+T2",
+            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Axial+T1+C",
+            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Coronal+T1+C",
+            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Axial+T2",
         ],
     },
     {
@@ -91,9 +91,9 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["ADEM", "Small Vessel Disease", "Vasculitis"],
         mriImages: [
-            "https://placehold.co/600x600/111111/444444?text=MS+Axial+FLAIR",
-            "https://placehold.co/600x600/111111/444444?text=MS+Sagittal+FLAIR",
-            "https://placehold.co/600x600/111111/444444?text=MS+Axial+T1+C",
+            "https://placehold.co/600x600/111111/444444.png?text=MS+Axial+FLAIR",
+            "https://placehold.co/600x600/111111/444444.png?text=MS+Sagittal+FLAIR",
+            "https://placehold.co/600x600/111111/444444.png?text=MS+Axial+T1+C",
         ],
     },
 ];
@@ -125,7 +125,7 @@ export const questions: Question[] = [
     {
         id: "q1",
         mriImage:
-            "https://placehold.co/600x600/111111/444444?text=Question+1+MRI",
+            "https://placehold.co/600x600/111111/444444.png?text=Question+1+MRI",
         options: [
             {
                 diagnosisId: "gbm",
@@ -155,7 +155,7 @@ export const questions: Question[] = [
     {
         id: "q2",
         mriImage:
-            "https://placehold.co/600x600/111111/444444?text=Question+2+MRI",
+            "https://placehold.co/600x600/111111/444444.png?text=Question+2+MRI",
         options: [
             {
                 diagnosisId: "meningioma",
@@ -185,7 +185,7 @@ export const questions: Question[] = [
     {
         id: "q3",
         mriImage:
-            "https://placehold.co/600x600/111111/444444?text=Question+3+MRI",
+            "https://placehold.co/600x600/111111/444444.png?text=Question+3+MRI",
         options: [
             {
                 diagnosisId: "ms",
