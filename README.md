@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NeuroLearn 🧠
 
-## Getting Started
+NeuroLearn is a medical education platform prototype designed to help medical students learn to classify brain diagnoses from MRI scans. It features a high-fidelity, dark-themed radiology workstation aesthetic.
 
-First, run the development server:
+## 🚀 Quick Start
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18.0.0 or later)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+
+### Development
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Components**: [shadcn/ui](https://ui.shadcn.com/) & [@base-ui/react](https://base-ui.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `app/`: Next.js App Router pages and layouts.
+    - `learn/`: Interactive MRI study module.
+    - `test/`: Self-assessment module with progress tracking.
+- `components/`: Reusable UI and feature-specific components.
+    - `learn/`: MRI Viewer, Diagnosis Cards, and Chat Panel.
+    - `test/`: Question cards and results summaries.
+    - `ui/`: Shared shadcn/ui components.
+- `lib/`: Utility functions and mock data.
+- `public/`: Static assets and icons.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Aesthetic Direction
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The project follows a "Radiology Reading Room" aesthetic:
 
-## Deploy on Vercel
+- **Dark Theme**: Deep near-black backgrounds (`#0a0c0f`, `#0f1117`).
+- **Accent**: Cool electric cyan (`#00d4ff`) for primary actions and glowing effects.
+- **Typography**:
+    - `Syne` for headings.
+    - `JetBrains Mono` for metadata and technical labels.
+    - `DM Sans` for body copy.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Mock Data
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+All data is statically mocked in [lib/mock-data.ts](lib/mock-data.ts). MRI images use [placehold.co](https://placehold.co) with specific parameters to mimic radiological scans.
+
+## 📜 Available Scripts
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Creates an optimized production build.
+- `npm run start`: Starts the production server.
+- `npm run lint`: Runs ESLint for code quality checks.
