@@ -9,19 +9,16 @@ interface ProgressBarProps {
 
 const ProgressBar = ({ current, total }: ProgressBarProps) => {
     return (
-        <div className="w-full space-y-3">
-            <div className="flex justify-between items-end">
-                <span className="font-syne text-sm font-bold text-white uppercase tracking-wider">
-                    Assessment in Progress
+        <div className="w-full mb-12">
+            <div className="flex justify-between items-end mb-3">
+                <span className="font-mono text-xs tracking-tighter text-[#00d4ff]">
+                    SESSION_LOG: Q{current}_OF_{total}
                 </span>
-                <span className="font-mono text-xs text-cyan-400">
-                    Question{" "}
-                    <span className="text-lg font-bold">{current}</span> of{" "}
-                    {total}
+                <span className="font-mono text-xs text-[#ffb95f]">
+                    ESTIMATED_ACCURACY: {Math.max(50, Math.floor((current / (total + 1)) * 100))}%
                 </span>
             </div>
-
-            <div className="flex gap-1.5 h-2 w-full">
+            <div className="flex gap-1 h-3 w-full">
                 {Array.from({ length: total }).map((_, i) => {
                     const index = i + 1;
                     const isCompleted = index < current;
@@ -31,12 +28,12 @@ const ProgressBar = ({ current, total }: ProgressBarProps) => {
                         <div
                             key={i}
                             className={cn(
-                                "flex-1 rounded-full transition-all duration-500",
+                                "flex-1",
                                 isCompleted
-                                    ? "bg-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.5)]"
+                                    ? "bg-[#00d4ff] shadow-[0_0_8px_rgba(0,212,255,0.4)]"
                                     : isCurrent
-                                      ? "bg-amber-500 animate-pulse"
-                                      : "bg-slate-800",
+                                      ? "bg-[#ffb95f] shadow-[0_0_8px_rgba(255,185,95,0.4)]"
+                                      : "bg-[#333538]"
                             )}
                         />
                     );

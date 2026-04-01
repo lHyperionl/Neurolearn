@@ -1,10 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, Send, User, Bot } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage, initialChatMessages } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -38,13 +34,12 @@ const ChatPanel = () => {
         setInputValue("");
         setIsThinking(true);
 
-        // Mock AI response
         setTimeout(() => {
             const aiResponse: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: "ai",
                 content:
-                    "Great question! This feature will be powered by AI in the full version. For now, I can tell you that this specific radiological finding is highly suggestive of the current diagnosis.",
+                    "I acknowledge your query. In the active diagnostic mode, notice how the pathological findings suggest rapid cellular division consistent with the primary diagnosis.",
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, aiResponse]);
@@ -53,58 +48,89 @@ const ChatPanel = () => {
     };
 
     return (
-        <div className="flex flex-col h-full rounded-xl border border-cyan-500/20 bg-[#0f1117] overflow-hidden shadow-xl">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-cyan-500/10 bg-cyan-500/5">
-                <Sparkles className="h-4 w-4 text-cyan-400" />
-                <h3 className="font-syne font-bold text-sm text-white">
-                    Study Assistant
-                </h3>
-                <div className="ml-auto flex items-center gap-1.5">
-                    <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">
-                        AI Online
-                    </span>
+        <div className="bg-[#1a1c1f] border border-[#3c494e] flex-1 flex flex-col overflow-hidden min-h-[400px]">
+            {/* Header */}
+            <div className="p-4 border-b border-[#3c494e]/30 flex items-center justify-between bg-[#282a2d]">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#00d4ff]/20 flex items-center justify-center border border-[#00d4ff]/50">
+                        <span
+                            className="material-symbols-outlined text-[#a8e8ff]"
+                            style={{ fontSize: "16px" }}
+                        >
+                            auto_awesome
+                        </span>
+                    </div>
+                    <div>
+                        <h4 className="font-syne text-xs font-bold uppercase tracking-wider text-[#e2e2e6]">
+                            Study Assistant
+                        </h4>
+                        <p className="text-[9px] text-[#a8e8ff] font-mono">
+                            NEURAL_MODEL: ON_LINE
+                        </p>
+                    </div>
                 </div>
+                <span
+                    className="material-symbols-outlined text-slate-500"
+                    style={{ fontSize: "18px" }}
+                >
+                    more_vert
+                </span>
             </div>
 
-            <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                <AnimatePresence>
                     {messages.map((msg) => (
                         <motion.div
                             key={msg.id}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className={cn(
-                                "flex gap-3 max-w-[85%]",
+                                "flex flex-col",
                                 msg.role === "student"
-                                    ? "ml-auto flex-row-reverse"
-                                    : "mr-auto",
+                                    ? "items-end"
+                                    : "items-start",
                             )}
                         >
                             <div
                                 className={cn(
-                                    "h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border",
-                                    msg.role === "ai"
-                                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                                        : "bg-slate-800 border-slate-700 text-slate-400",
+                                    "p-3 max-w-[90%]",
+                                    msg.role === "student"
+                                        ? "bg-[#333538] border-r-2 border-[#00d4ff]/40"
+                                        : "bg-[#00d4ff]/5 border-l-2 border-[#a8e8ff]",
                                 )}
                             >
-                                {msg.role === "ai" ? (
-                                    <Bot className="h-4 w-4" />
-                                ) : (
-                                    <User className="h-4 w-4" />
-                                )}
+                                <p
+                                    className={cn(
+                                        "text-xs leading-relaxed",
+                                        msg.role === "student"
+                                            ? "text-[#e2e2e6]"
+                                            : "text-[#bbc9cf]",
+                                    )}
+                                >
+                                    {msg.content}
+                                </p>
                             </div>
-                            <div
+                            <span
+                                suppressHydrationWarning
                                 className={cn(
-                                    "px-3 py-2 rounded-2xl text-sm",
-                                    msg.role === "ai"
-                                        ? "bg-slate-900 border border-slate-800 text-slate-300 rounded-tl-none"
-                                        : "bg-cyan-600 text-white rounded-tr-none",
+                                    "text-[9px] font-mono mt-1",
+                                    msg.role === "student"
+                                        ? "text-slate-500"
+                                        : "text-[#a8e8ff]",
                                 )}
                             >
-                                {msg.content}
-                            </div>
+                                {msg.role === "student"
+                                    ? "STUDENT_01"
+                                    : "CORE_AI"}{" "}
+                                [
+                                {msg.timestamp.toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                })}
+                                ]
+                            </span>
                         </motion.div>
                     ))}
 
@@ -112,30 +138,27 @@ const ChatPanel = () => {
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex gap-3 mr-auto"
+                            className="flex flex-col items-start"
                         >
-                            <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border bg-cyan-500/10 border-cyan-500/30 text-cyan-400">
-                                <Bot className="h-4 w-4" />
-                            </div>
-                            <div className="px-3 py-2 rounded-2xl rounded-tl-none bg-slate-900 border border-slate-800 text-slate-500 text-sm flex items-center gap-1">
-                                Thinking
-                                <span className="flex gap-0.5">
-                                    <span className="animate-bounce">.</span>
-                                    <span className="animate-bounce [animation-delay:0.2s]">
-                                        .
-                                    </span>
-                                    <span className="animate-bounce [animation-delay:0.4s]">
-                                        .
-                                    </span>
+                            <div className="bg-[#00d4ff]/5 p-3 max-w-[90%] border-l-2 border-[#a8e8ff] flex items-center gap-2">
+                                <span
+                                    className="material-symbols-outlined text-[#a8e8ff] animate-spin"
+                                    style={{ fontSize: "14px" }}
+                                >
+                                    autorenew
+                                </span>
+                                <span className="text-xs text-[#bbc9cf] font-mono">
+                                    Processing...
                                 </span>
                             </div>
                         </motion.div>
                     )}
-                    <div ref={messagesEndRef} />
-                </div>
-            </ScrollArea>
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+            </div>
 
-            <div className="p-4 border-t border-cyan-500/10 bg-black/20">
+            {/* Input Bar */}
+            <div className="p-4 border-t border-[#3c494e]/30">
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -143,20 +166,25 @@ const ChatPanel = () => {
                     }}
                     className="flex gap-2"
                 >
-                    <Input
+                    <input
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Ask about this scan..."
-                        className="bg-slate-900/50 border-slate-800 focus-visible:ring-cyan-500/50 text-sm"
+                        placeholder="QUERY_NEURAL_DATABASE..."
+                        className="flex-1 bg-transparent border-b border-[#3c494e] focus:border-[#a8e8ff] focus:ring-0 text-xs font-mono py-2 placeholder:text-slate-600 outline-none text-[#e2e2e6]"
+                        type="text"
                     />
-                    <Button
+                    <button
                         type="submit"
-                        size="icon"
-                        className="bg-cyan-600 hover:bg-cyan-500 text-white shrink-0"
                         disabled={!inputValue.trim() || isThinking}
+                        className="bg-[#00d4ff] text-[#00586b] p-2 flex items-center justify-center transition-transform active:scale-95 disabled:opacity-50"
                     >
-                        <Send className="h-4 w-4" />
-                    </Button>
+                        <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: "18px" }}
+                        >
+                            send
+                        </span>
+                    </button>
                 </form>
             </div>
         </div>

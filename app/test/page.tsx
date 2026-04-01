@@ -4,6 +4,7 @@ import { useState } from "react";
 import ProgressBar from "@/components/test/ProgressBar";
 import QuestionCard from "@/components/test/QuestionCard";
 import ResultsSummary from "@/components/test/ResultsSummary";
+import Footer from "@/components/test/Footer";
 import { questions } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -33,52 +34,55 @@ export default function TestPage() {
     };
 
     return (
-        <div className="container mx-auto px-4 py-12 min-h-[calc(100vh-64px)] flex flex-col items-center">
-            <div className="w-full max-w-4xl space-y-12">
-                {!isFinished && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                    >
-                        <ProgressBar
-                            current={currentQuestionIndex + 1}
-                            total={questions.length}
-                        />
-                    </motion.div>
-                )}
-
-                <AnimatePresence mode="wait">
-                    {!isFinished ? (
+        <>
+            <main className="flex-grow flex flex-col items-center px-4 py-8 w-full max-w-5xl mx-auto">
+                <div className="w-full">
+                    {!isFinished && (
                         <motion.div
-                            key={currentQuestionIndex}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                            className="w-full"
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
                         >
-                            <QuestionCard
-                                question={questions[currentQuestionIndex]}
-                                onAnswer={handleAnswer}
-                                onNext={handleNext}
-                            />
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="results"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="w-full"
-                        >
-                            <ResultsSummary
-                                score={score}
+                            <ProgressBar
+                                current={currentQuestionIndex + 1}
                                 total={questions.length}
-                                onReset={handleReset}
                             />
                         </motion.div>
                     )}
-                </AnimatePresence>
-            </div>
-        </div>
+
+                    <AnimatePresence mode="wait">
+                        {!isFinished ? (
+                            <motion.div
+                                key={currentQuestionIndex}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="w-full"
+                            >
+                                <QuestionCard
+                                    question={questions[currentQuestionIndex]}
+                                    onAnswer={handleAnswer}
+                                    onNext={handleNext}
+                                />
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="results"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="w-full"
+                            >
+                                <ResultsSummary
+                                    score={score}
+                                    total={questions.length}
+                                    onReset={handleReset}
+                                />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </main>
+            <Footer />
+        </>
     );
 }

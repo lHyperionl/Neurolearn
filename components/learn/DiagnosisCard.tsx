@@ -1,99 +1,105 @@
 "use client";
 
+import { useState } from "react";
 import { Diagnosis } from "@/lib/mock-data";
-import { Badge } from "@/components/ui/badge";
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from "@/components/ui/accordion";
-import { motion } from "framer-motion";
-import { CheckCircle2, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DiagnosisCardProps {
     diagnosis: Diagnosis;
 }
 
 const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
+    const [featuresOpen, setFeaturesOpen] = useState(true);
+
     return (
-        <div className="flex flex-col gap-6 p-6 rounded-xl border border-cyan-500/20 bg-[#0f1117] shadow-xl relative overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/5 blur-[100px] rounded-full" />
-
-            <div className="space-y-4">
-                <motion.h2
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-3xl font-bold font-syne text-white glow-text"
-                >
-                    {diagnosis.name}
-                </motion.h2>
-
-                <div className="flex flex-wrap gap-2">
-                    {diagnosis.grade && (
-                        <Badge
-                            variant="outline"
-                            className="border-amber-500/50 text-amber-500 bg-amber-500/5 font-mono"
-                        >
-                            {diagnosis.grade}
-                        </Badge>
-                    )}
-                    {diagnosis.tags.map((tag) => (
-                        <Badge
-                            key={tag}
-                            variant="secondary"
-                            className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 font-mono text-[10px]"
-                        >
-                            {tag}
-                        </Badge>
-                    ))}
-                </div>
-
-                <p className="text-slate-400 leading-relaxed text-sm">
-                    {diagnosis.description}
-                </p>
+        <div className="bg-[#1e2023] border border-[#3c494e] p-6 relative">
+            {/* Grade + Tag badges */}
+            <div className="absolute top-4 right-4 flex gap-2 flex-wrap max-w-[55%] justify-end">
+                {diagnosis.grade && (
+                    <span className="px-2 py-0.5 border border-[#ffb4ab]/50 text-[#ffb4ab] text-[10px] font-mono uppercase">
+                        {diagnosis.grade}
+                    </span>
+                )}
+                {diagnosis.tags.slice(0, 1).map((tag) => (
+                    <span
+                        key={tag}
+                        className="px-2 py-0.5 border border-[#ffb95f]/50 text-[#ffb95f] text-[10px] font-mono uppercase"
+                    >
+                        {tag}
+                    </span>
+                ))}
             </div>
 
-            <Accordion className="w-full">
-                <AccordionItem value="features" className="border-cyan-500/10">
-                    <AccordionTrigger className="text-cyan-400 hover:text-cyan-300 font-mono text-xs uppercase tracking-wider">
-                        Key Features on MRI
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <ul className="space-y-3 pt-2">
+            {/* Title */}
+            <h1 className="font-syne text-2xl font-extrabold text-[#e2e2e6] tracking-tighter mb-4 pr-36 leading-none">
+                {diagnosis.name}
+            </h1>
+
+            {/* Description */}
+            <p className="text-sm text-[#bbc9cf] mb-6 leading-relaxed">
+                {diagnosis.description}
+            </p>
+
+            {/* Key Features */}
+            <div className="mb-6">
+                <button
+                    onClick={() => setFeaturesOpen(!featuresOpen)}
+                    className="flex items-center justify-between w-full border-b border-[#3c494e]/30 pb-2 mb-3 text-[#a8e8ff] hover:text-[#00d4ff] transition-colors"
+                >
+                    <span className="font-mono text-xs uppercase tracking-widest">
+                        Key Features
+                    </span>
+                    <span
+                        className="material-symbols-outlined transition-transform duration-200"
+                        style={{
+                            fontSize: "18px",
+                            transform: featuresOpen
+                                ? "rotate(180deg)"
+                                : "rotate(0deg)",
+                        }}
+                    >
+                        expand_more
+                    </span>
+                </button>
+
+                <AnimatePresence initial={false}>
+                    {featuresOpen && (
+                        <motion.ul
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="space-y-2 overflow-hidden"
+                        >
                             {diagnosis.keyFeatures.map((feature, index) => (
                                 <motion.li
                                     key={index}
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    className="flex items-start gap-3 text-sm text-slate-300"
+                                    transition={{ delay: index * 0.07 }}
+                                    className="flex items-start gap-3 text-sm text-[#bbc9cf]"
                                 >
-                                    <CheckCircle2 className="h-4 w-4 text-cyan-500 mt-0.5 shrink-0" />
+                                    <span className="text-[#a8e8ff] mt-0.5 text-[10px] shrink-0">
+                                        ▶
+                                    </span>
                                     <span>{feature}</span>
                                 </motion.li>
                             ))}
-                        </ul>
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
+                        </motion.ul>
+                    )}
+                </AnimatePresence>
+            </div>
 
-            <div className="space-y-3">
-                <h4 className="text-[10px] font-mono uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                    <AlertCircle className="h-3 w-3" />
-                    Differential Diagnoses
-                </h4>
-                <div className="flex flex-wrap gap-2">
-                    {diagnosis.differentials.map((diff) => (
-                        <button
-                            key={diff}
-                            className="px-3 py-1 rounded-full border border-slate-800 bg-slate-900/50 text-xs text-slate-400 hover:border-cyan-500/50 hover:text-cyan-400 transition-all cursor-pointer"
-                        >
-                            {diff}
-                        </button>
-                    ))}
-                </div>
+            {/* Differentials */}
+            <div className="flex flex-wrap gap-2">
+                {diagnosis.differentials.map((diff) => (
+                    <span
+                        key={diff}
+                        className="px-3 py-1 bg-[#333538] text-[10px] text-slate-400 font-mono"
+                    >
+                        DIF: {diff}
+                    </span>
+                ))}
             </div>
         </div>
     );
