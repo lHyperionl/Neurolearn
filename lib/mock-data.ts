@@ -52,12 +52,6 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["Astrocytoma", "Abscess", "Metastasis"],
         mriImages: [
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=GBM+Axial+T1+C",
-            "https://placehold.co/600x600/111111/444444.png?text=GBM+Sagittal+T2",
-            "https://placehold.co/600x600/111111/444444.png?text=GBM+Coronal+FLAIR",
-            "https://placehold.co/600x600/111111/444444.png?text=GBM+Axial+DWI",
-=======
             {
                 url: "https://placehold.co/600x600/0a0a0a/2a9d8f?text=AXIAL",
                 view: "AXIAL",
@@ -78,7 +72,6 @@ export const diagnoses: Diagnosis[] = [
                 view: "3D_RECON",
                 sequence: "VOLUMETRIC",
             },
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         ],
     },
     {
@@ -97,11 +90,6 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["Dural Metastasis", "Hemangiopericytoma", "Schwannoma"],
         mriImages: [
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Axial+T1+C",
-            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Coronal+T1+C",
-            "https://placehold.co/600x600/111111/444444.png?text=Meningioma+Axial+T2",
-=======
             {
                 url: "https://placehold.co/600x600/0a0a0a/e9c46a?text=AXIAL",
                 view: "AXIAL",
@@ -122,7 +110,6 @@ export const diagnoses: Diagnosis[] = [
                 view: "3D_RECON",
                 sequence: "VOLUMETRIC",
             },
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         ],
     },
     {
@@ -140,11 +127,6 @@ export const diagnoses: Diagnosis[] = [
         ],
         differentials: ["ADEM", "Small Vessel Disease", "Vasculitis"],
         mriImages: [
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=MS+Axial+FLAIR",
-            "https://placehold.co/600x600/111111/444444.png?text=MS+Sagittal+FLAIR",
-            "https://placehold.co/600x600/111111/444444.png?text=MS+Axial+T1+C",
-=======
             {
                 url: "https://placehold.co/600x600/0a0a0a/f4a261?text=AXIAL+FLAIR",
                 view: "AXIAL",
@@ -165,7 +147,6 @@ export const diagnoses: Diagnosis[] = [
                 view: "3D_RECON",
                 sequence: "VOLUMETRIC",
             },
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         ],
     },
 ];
@@ -203,11 +184,7 @@ export const questions: Question[] = [
     {
         id: "q1",
         mriImage:
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=Question+1+MRI",
-=======
             "https://placehold.co/600x600/0a0a0a/2a9d8f?text=Q1+Axial+T1C",
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         options: [
             {
                 diagnosisId: "gbm",
@@ -237,11 +214,7 @@ export const questions: Question[] = [
     {
         id: "q2",
         mriImage:
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=Question+2+MRI",
-=======
             "https://placehold.co/600x600/0a0a0a/264653?text=Q2+Axial+T1C",
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         options: [
             {
                 diagnosisId: "meningioma",
@@ -271,11 +244,7 @@ export const questions: Question[] = [
     {
         id: "q3",
         mriImage:
-<<<<<<< HEAD
-            "https://placehold.co/600x600/111111/444444.png?text=Question+3+MRI",
-=======
             "https://placehold.co/600x600/0a0a0a/2a9d8f?text=Q3+Sagittal+FLAIR",
->>>>>>> b9ad394 (feat: implement Material Design 3 theme and update UI components with advanced MRI viewer functionality)
         options: [
             {
                 diagnosisId: "ms",
