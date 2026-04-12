@@ -1,0 +1,4 @@
+# FastAPI backend requirements
+fastapi
+uvicorn
+nibabel

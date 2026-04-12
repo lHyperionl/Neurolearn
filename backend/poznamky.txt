@@ -1,0 +1,46 @@
+# Backend (FastAPI) - poznámky pre tím
+
+## Co backend robi
+- Poskytuje REST API pre praca s MRI/NIfTI datasetmi ulozenymi v backend/data/.
+- Umoznuje:
+	- zoznamit dostupne pripady (case ID),
+	- vypisat subory v danom pripade,
+	- precitat metadata NIfTI suboru,
+	- staticky servovat NIfTI subory cez HTTP.
+
+## Struktura dat
+- Kazdy pripad je priecinok v backend/data/.
+- V pripade su NIfTI subory (napr. t1.nii, flair.nii, seg.nii).
+
+## API endpointy
+- GET /cases
+	- Vrati zoznam dostupnych pripadov.
+- GET /cases/{case_id}/files
+	- Vrati zoznam suborov v pripade.
+- GET /metadata/{case_id}/{filename}
+	- Vrati metadata (shape, datatype, affine, ...).
+- GET /files/{case_id}/{filename}
+	- Staticky poskytne subor (NIfTI) pre klienta.
+- GET /participants/{participant_id}
+	- Vrati info o pacientovi z backend/docs/participants.tsv (diagnosis, age, gender).
+
+## Poziadavky
+- Python 3.10+ (odporucane).
+- Baliky su v backend/requirements.txt:
+	- fastapi
+	- uvicorn
+	- nibabel
+
+## Spustenie (lokalne)
+1. Aktivuj virtualne prostredie (ak pouzivas .venv).
+2. Nainstaluj zavislosti:
+	 pip install -r backend/requirements.txt
+3. Spusti server (z rootu projektu):
+	 uvicorn backend.main:app --reload
+
+## Poznamky
+- Server defaultne bezi na http://127.0.0.1:8000
+- CORS je pre vyvoj povolene na vsetko.
+- Data musia byt v backend/data/ vo forme priecinkov.
+- NIfTI data (.nii) nie su v repozitari (su velke). Kazdy si ich musi pridať osobitne.
+- Je potrebné pridať priecinky s pripadmi do backend/data/ (napr. backend/data/sub-50004/T1w.nii).
