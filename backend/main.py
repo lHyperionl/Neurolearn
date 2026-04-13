@@ -1,11 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import nibabel as nib
 import os
 import csv
-from .database import Base, engine
+
+from sqlalchemy.orm import Session
+from .database import get_db, Base, engine
 from .models import Participant
+
 
 app = FastAPI()
 
@@ -70,28 +73,25 @@ def get_metadata(case_id: str, filename: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Endpoint pre informacie o pacientovi z participants.tsv
+    
+# Endpoint pre informacie o pacientovi z db
 @app.get("/participants/{participant_id}")
-def get_participant(participant_id: str):
-    if not os.path.exists(PARTICIPANTS_PATH):
-        raise HTTPException(status_code=500, detail="participants.tsv nenajdeny")
-    try:
-        with open(PARTICIPANTS_PATH, "r", encoding="utf-8") as f:
-            reader = csv.DictReader(f, delimiter="\t")
-            for row in reader:
-                if row.get("participant_id") == participant_id:
-                    return {
-                        "participant_id": row.get("participant_id"),
-                        "diagnosis": row.get("diagnosis"),
-                        "age": row.get("age"),
-                        "gender": row.get("gender"),
-                    }
-        raise HTTPException(status_code=404, detail="Participant nenajdeny")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def get_participant(participant_id: str, db: Session = Depends(get_db)):
+    participant = (
+        db.query(Participant)
+        .filter(Participant.participant_id == participant_id)
+        .first()
+    )
+
+    if participant is None:
+        raise HTTPException(status_code=404, detail="Participant not found")
+
+    return {
+        "participant_id": participant.participant_id,
+        "diagnosis": participant.diagnosis,
+        "age": participant.age,
+        "gender": participant.gender,
+    }
 
 # Statické súbory pre všetky prípady
 class MultiCaseStaticFiles(StaticFiles):
