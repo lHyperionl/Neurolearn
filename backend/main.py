@@ -4,6 +4,8 @@ from fastapi.staticfiles import StaticFiles
 import nibabel as nib
 import os
 import csv
+from .database import Base, engine
+from .models import Participant
 
 app = FastAPI()
 
@@ -20,6 +22,12 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data")
 PARTICIPANTS_PATH = os.path.join(BASE_DIR, "docs", "participants.tsv")
+
+Base.metadata.create_all(bind=engine)
+
+@app.get("/APIhealth")
+def root():
+    return {"message": "API is running"}
 
 # Endpoint na výpis všetkých prípadov (adresárov)
 @app.get("/cases")
