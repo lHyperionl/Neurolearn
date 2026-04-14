@@ -17,7 +17,7 @@ interface PatientInfo {
   gender?: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "${API_URL}";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export default function ViewerMRIPage() {
   const [cases, setCases] = useState<string[]>([]);
@@ -35,7 +35,7 @@ export default function ViewerMRIPage() {
   // Fetch all cases on mount
   useEffect(() => {
     setLoading(true);
-    fetch("${API_URL}/cases")
+    fetch(`${API_URL}/cases`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
