@@ -4,28 +4,54 @@ NeuroLearn is a medical education platform prototype designed to help medical st
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v18.0.0 or later)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-    ```bash
-    npm install
-    ```
-
-### Development
-
-Run the development server:
-
-```bash
-npm run dev
+### Directory Structure
+```text
+MaPS/
+├── app/               # Next.js App Router frontend
+├── components/        # Shared React components (Shadcn/Niivue)
+├── backend/           # FastAPI backend
+│   ├── data/          # NIfTI MRI Cases (mounted in dev)
+│   ├── docs/          # TSV Data (mounted in dev)
+│   ├── main.py        # API Entrypoint
+│   ├── database.py    # SQLite Config
+│   ├── models.py      # SQLAlchemy Models
+│   └── import_participants.py # Seeder script
+├── public/            # Static Next.js assets
+├── .env.example       # Example env variables
+└── docker-compose.yml # Development orchestration
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Local Setup Instructions (Step-by-Step)
+1. **Clone the repository.**
+2. **Setup Environment:** Copy the example config:
+   ```bash
+   cp .env.example .env
+   ```
+3. **Start the Development Environment:**
+   ```bash
+   docker compose up -d --build
+   ```
+   *(This starts frontend on `:3000` and backend on `:8000` with hot-reloading enabled).*
+
+### Migrations & Seed Data
+The database schema initializes automatically on backend startup. To seed the database with participant data from the `.tsv` file:
+```bash
+docker compose exec backend python -m backend.import_participants
+```
+
+### Verification & Health Checks
+- **Backend Health:** Open `http://localhost:8000/APIhealth` (Should return `{"message": "API is running"}`).
+- **Frontend App:** Open `http://localhost:3000` and ensure the MRI Viewer loads successfully.
+- Check logs if issues arise: `docker compose logs -f`
+
+### Recommended IDEs & Workflow
+- **VS Code:** Recommended with extensions for Python, Pylance, Prettier, ESLint, and Tailwind CSS.
+- **Cross-Platform:** Works natively on macOS/Linux. On Windows, ensure Docker Desktop is configured to use the **WSL2 backend**, and clone the repository directly inside the WSL filesystem (e.g., `~/projects/maps`) to avoid SQLite file-locking issues and drastically improve volume mount performance.
+
+### Troubleshooting
+- **"ModuleNotFoundError: No module named 'nibabel'":** Ensure the backend container rebuilt correctly after a `requirements.txt` update (`docker compose build backend`).
+- **SQLite "database is locked":** Occurs frequently on Windows NTFS mounts. Always use WSL2 for Docker volumes on Windows.
+- **CORS Errors:** Verify `NEXT_PUBLIC_API_URL` in `.env` perfectly matches the URL you are using to access the frontend (e.g., `http://127.0.0.1:8000` vs `http://localhost:8000`).
 
 ## 🛠️ Tech Stack
 

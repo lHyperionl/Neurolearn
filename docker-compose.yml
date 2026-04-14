@@ -3,14 +3,32 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: npm run dev
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - .env
+    depends_on:
+      backend:
+        condition: service_healthy
 
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
+    command: /app/backend/entrypoint.sh
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/APIhealth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
