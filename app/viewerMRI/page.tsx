@@ -38,7 +38,11 @@ export default function ViewerMRIPage() {
       .then((data) => {
         if (Array.isArray(data)) {
           setCases(data);
-        } else if (typeof data === "object" && data !== null && Array.isArray(data.cases)) {
+        } else if (
+          typeof data === "object" &&
+          data !== null &&
+          Array.isArray(data.cases)
+        ) {
           setCases(data.cases);
         } else {
           setCases([]);
@@ -62,7 +66,11 @@ export default function ViewerMRIPage() {
         console.log("Files fetch result:", data);
         if (Array.isArray(data)) {
           setFiles(data);
-        } else if (typeof data === "object" && data !== null && Array.isArray(data.files)) {
+        } else if (
+          typeof data === "object" &&
+          data !== null &&
+          Array.isArray(data.files)
+        ) {
           setFiles(data.files);
         } else {
           setFiles([]);
@@ -119,8 +127,12 @@ export default function ViewerMRIPage() {
     <div className="w-full max-w-[1400px] mx-auto mt-10 p-8 bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
-      <h1 className="text-3xl font-bold font-syne text-white glow-text mb-8 text-center">MRI Case Viewer</h1>
-      {loading && <div className="text-cyan-400 font-mono mb-4">Loading...</div>}
+      <h1 className="text-3xl font-bold font-syne text-white glow-text mb-8 text-center">
+        MRI Case Viewer
+      </h1>
+      {loading && (
+        <div className="text-cyan-400 font-mono mb-4">Loading...</div>
+      )}
       {error && <div className="text-red-400 font-mono mb-4">{error}</div>}
       {/* Výber prípadu */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center gap-3">
@@ -131,11 +143,12 @@ export default function ViewerMRIPage() {
           className="bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
         >
           <option value="">-- Select a case --</option>
-          {Array.isArray(cases) && cases.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+          {Array.isArray(cases) &&
+            cases.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
         </select>
       </div>
       {/* Výber modality */}
@@ -146,9 +159,11 @@ export default function ViewerMRIPage() {
             <button
               key={f}
               className={`px-4 py-2 rounded-md font-mono border transition-colors text-xs
-                ${selectedFile === f
-                  ? 'bg-cyan-500 text-white border-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.3)]'
-                  : 'bg-[#181b22] text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10'}
+                ${
+                  selectedFile === f
+                    ? "bg-cyan-500 text-white border-cyan-500 shadow-[0_0_10px_rgba(0,212,255,0.3)]"
+                    : "bg-[#181b22] text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10"
+                }
               `}
               onClick={() => setSelectedFile(f)}
             >
@@ -183,9 +198,11 @@ export default function ViewerMRIPage() {
           {overlayFile && selectedFile !== overlayFile && (
             <button
               className={`mt-4 px-4 py-2 rounded-md font-mono border transition-colors text-xs
-                ${showOverlay
-                  ? 'bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
-                  : 'bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10'}
+                ${
+                  showOverlay
+                    ? "bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
+                    : "bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                }
               `}
               onClick={() => setShowOverlay((v) => !v)}
             >
