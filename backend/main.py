@@ -15,7 +15,7 @@ app = FastAPI()
 # Povolenie CORS (pre vývoj povolené všetko, v produkcii zmeniť)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -28,18 +28,25 @@ PARTICIPANTS_PATH = os.path.join(BASE_DIR, "docs", "participants.tsv")
 
 Base.metadata.create_all(bind=engine)
 
+
 @app.get("/APIhealth")
 def root():
     return {"message": "API is running"}
+
 
 # Endpoint na výpis všetkých prípadov (adresárov)
 @app.get("/cases")
 def list_cases():
     try:
-        cases = [d for d in os.listdir(BASE_DATA_DIR) if os.path.isdir(os.path.join(BASE_DATA_DIR, d))]
+        cases = [
+            d
+            for d in os.listdir(BASE_DATA_DIR)
+            if os.path.isdir(os.path.join(BASE_DATA_DIR, d))
+        ]
         return {"cases": cases}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # Endpoint na výpis všetkých súborov v prípade
 @app.get("/cases/{case_id}/files")
@@ -48,10 +55,13 @@ def list_case_files(case_id: str):
     if not os.path.isdir(case_dir):
         raise HTTPException(status_code=404, detail="Prípad nenájdený")
     try:
-        files = [f for f in os.listdir(case_dir) if os.path.isfile(os.path.join(case_dir, f))]
+        files = [
+            f for f in os.listdir(case_dir) if os.path.isfile(os.path.join(case_dir, f))
+        ]
         return {"files": files}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # Endpoint pre metadáta konkrétneho súboru v prípade
 @app.get("/metadata/{case_id}/{filename}")
@@ -69,11 +79,12 @@ def get_metadata(case_id: str, filename: str):
             "datatype": str(header.get_data_dtype()),
             "vox_offset": float(header["vox_offset"]),
             "units": header.get_xyzt_units(),
-            "affine": img.affine.tolist()
+            "affine": img.affine.tolist(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 # Endpoint pre informacie o pacientovi z db
 @app.get("/participants/{participant_id}")
 def get_participant(participant_id: str, db: Session = Depends(get_db)):
@@ -93,6 +104,7 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
         "gender": participant.gender,
     }
 
+
 # Statické súbory pre všetky prípady
 class MultiCaseStaticFiles(StaticFiles):
     def __init__(self, base_directory: str):
@@ -103,9 +115,11 @@ class MultiCaseStaticFiles(StaticFiles):
         # path: "{case_id}/{filename}"
         return await super().get_response(path, scope)
 
+
 # Mount statických súborov na /files/{case_id}/{filename}
 app.mount("/files", MultiCaseStaticFiles(BASE_DATA_DIR), name="files")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

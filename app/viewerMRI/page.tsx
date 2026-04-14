@@ -17,6 +17,8 @@ interface PatientInfo {
   gender?: string;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "${API_URL}";
+
 export default function ViewerMRIPage() {
   const [cases, setCases] = useState<string[]>([]);
   const [selectedCase, setSelectedCase] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function ViewerMRIPage() {
   // Fetch all cases on mount
   useEffect(() => {
     setLoading(true);
-    fetch("http://127.0.0.1:8000/cases")
+    fetch("${API_URL}/cases")
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -55,7 +57,7 @@ export default function ViewerMRIPage() {
   useEffect(() => {
     if (!selectedCase) return;
     setLoading(true);
-    fetch(`http://127.0.0.1:8000/cases/${selectedCase}/files`)
+    fetch(`${API_URL}/cases/${selectedCase}/files`)
       .then((res) => res.json())
       .then((data) => {
         // Debug: log what came from the server
@@ -90,7 +92,7 @@ export default function ViewerMRIPage() {
     }
     setPatientLoading(true);
     setPatientError(null);
-    fetch(`http://127.0.0.1:8000/participants/${selectedCase}`)
+    fetch(`${API_URL}/participants/${selectedCase}`)
       .then(async (res) => {
         if (!res.ok) {
           throw new Error("Patient not found");
@@ -161,7 +163,7 @@ export default function ViewerMRIPage() {
       {selectedCase && selectedFile && (
         <div>
           <MRIViewerNiiVue
-            url={`http://127.0.0.1:8000/files/${selectedCase}/${selectedFile}`}
+            url={`${API_URL}/files/${selectedCase}/${selectedFile}`}
             patientInfo={
               patientInfo
                 ? {
@@ -176,7 +178,7 @@ export default function ViewerMRIPage() {
             patientError={patientError}
             overlayToggleUrl={
               showOverlay && overlayFile && selectedFile !== overlayFile
-                ? `http://127.0.0.1:8000/files/${selectedCase}/${overlayFile}`
+                ? `${API_URL}/files/${selectedCase}/${overlayFile}`
                 : undefined
             }
           />
