@@ -29,12 +29,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 🛠️ Tech Stack
 
-- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI Runtime**: [React 19](https://react.dev/)
 - **Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
-- **Components**: [shadcn/ui](https://ui.shadcn.com/) & [@base-ui/react](https://base-ui.com/)
+- **Components**: [shadcn](https://ui.shadcn.com/) & [@base-ui/react](https://base-ui.com/)
+- **MRI Viewer**: [@niivue/niivue](https://niivue.github.io/niivue/) (NIfTI format support)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Backend**: [FastAPI](https://fastapi.dev/) with [SQLAlchemy](https://sqlalchemy.org/)
 
 ## 📁 Project Structure
 
