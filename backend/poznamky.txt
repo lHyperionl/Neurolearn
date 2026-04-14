@@ -35,7 +35,9 @@
 1. Aktivuj virtualne prostredie (ak pouzivas .venv).
 2. Nainstaluj zavislosti:
 	 pip install -r backend/requirements.txt
-3. Spusti server (z rootu projektu):
+3. Spusti prikaz na nacitanie dat do db pri prvotnom spustani
+	python -m backend.import_participants
+4. Spusti server (z rootu projektu):
 	 uvicorn backend.main:app --reload
 
 ## Poznamky
