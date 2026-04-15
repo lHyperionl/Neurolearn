@@ -10,6 +10,7 @@ export default function TestPage() {
   const [question, setQuestion] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   const questionCount = 10;
 
@@ -38,8 +39,10 @@ export default function TestPage() {
     fetchQuestion();
   }, [allCases, question]);
 
-  const handleAnswer = (isCorrect: boolean) => {
+  const handleAnswer = (value: string, isCorrect: boolean) => {
     if (answered) return;
+
+    setSelectedAnswer(value);
 
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -52,14 +55,23 @@ export default function TestPage() {
     if (question + 1 < Math.min(questionCount, allCases.length)) {
       setQuestion((prev) => prev + 1);
       setAnswered(false);
+      setSelectedAnswer(null);
     } else {
       setIsFinished(true);
     }
   };
 
+  const handleRestart = () => {
+    setScore(0);
+    setQuestion(0);
+    setIsFinished(false);
+    setAnswered(false);
+    setSelectedAnswer(null);
+  };
+
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6">
-      {currentQuestion && (
+    <div className="w-full max-w-5xl mx-auto space-y-6 relative">
+      {currentQuestion && !isFinished && (
         <>
           <MRITestViewer
             key={currentQuestion.participant_id}
@@ -82,9 +94,12 @@ export default function TestPage() {
                 "bg-[#1e2023] hover:bg-[#282a2d] border-transparent text-[#e2e2e6]";
 
               if (answered) {
-                if (isCorrect) {
+                if (value === currentQuestion.correct) {
                   style =
                     "bg-[#333538] border-[#a8e8ff] text-[#00d4ff] shadow-[0_0_15px_rgba(168,232,255,0.1)]";
+                } else if (value === selectedAnswer) {
+                  style =
+                    "bg-[#3a1f1f] border-[#ff6b6b] text-[#ff6b6b] shadow-[0_0_10px_rgba(255,107,107,0.2)]";
                 } else {
                   style = "bg-[#1e2023] opacity-50 border-transparent";
                 }
@@ -94,7 +109,7 @@ export default function TestPage() {
                 <button
                   key={value}
                   disabled={answered}
-                  onClick={() => handleAnswer(isCorrect)}
+                  onClick={() => handleAnswer(value, isCorrect)}
                   className={`${base} ${style}`}
                 >
                   <span className="font-bold text-sm">{value}</span>
@@ -120,14 +135,50 @@ export default function TestPage() {
               shadow-[0_0_30px_rgba(168,232,255,0.2)]
             "
           >
-            NEXT_SEQUENCE
+            {question == questionCount - 1 ? "SHOW RESULT" : "NEXT"}
+            {/* NEXT */}
           </button>
         </>
       )}
 
       {isFinished && (
-        <div className="text-center text-[#e2e2e6] font-syne text-xl">
-          Finished! Final Score: {score}
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#1e2023] p-10 rounded-xl shadow-[0_0_40px_rgba(0,0,0,0.6)] text-center space-y-6">
+            <div className="text-[#e2e2e6] font-syne text-2xl">Finished!</div>
+            <div className="text-[#a8e8ff] font-mono text-lg">
+              Final Score: {score}
+            </div>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={handleRestart}
+                className="
+                  bg-[#a8e8ff]
+                  text-[#003642]
+                  px-6 py-3
+                  font-syne font-bold
+                  uppercase text-xs tracking-widest
+                  hover:brightness-110
+                  transition-all
+                "
+              >
+                Restart
+              </button>
+              <button
+                onClick={() => setIsFinished(false)}
+                className="
+                  bg-[#333538]
+                  text-[#e2e2e6]
+                  px-6 py-3
+                  font-syne font-bold
+                  uppercase text-xs tracking-widest
+                  hover:bg-[#44474a]
+                  transition-all
+                "
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

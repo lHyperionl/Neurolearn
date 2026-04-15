@@ -11,7 +11,7 @@ const Navbar = () => {
     { name: "Learn", href: "/learn" },
     { name: "Test Yourself", href: "/test" },
     { name: "MRI Viewer", href: "/viewerMRI" },
-    { name: "Test test", href: "/testtest" },
+    { name: "Test", href: "/testtest" },
   ];
 
   return (
