@@ -5,6 +5,7 @@ NeuroLearn is a medical education platform prototype designed to help medical st
 ## 🚀 Quick Start
 
 ### Directory Structure
+
 ```text
 MaPS/
 ├── app/               # Next.js App Router frontend
@@ -22,33 +23,39 @@ MaPS/
 ```
 
 ### Local Setup Instructions (Step-by-Step)
+
 1. **Clone the repository.**
 2. **Setup Environment:** Copy the example config:
-   ```bash
-   cp .env.example .env
-   ```
+    ```bash
+    cp .env.example .env
+    ```
 3. **Start the Development Environment:**
-   ```bash
-   docker compose up -d --build
-   ```
-   *(This starts frontend on `:3000` and backend on `:8000` with hot-reloading enabled).*
+    ```bash
+    docker compose up -d --build
+    ```
+    _(This starts frontend on `:3000` and backend on `:8000` with hot-reloading enabled)._
 
 ### Migrations & Seed Data
+
 The database schema initializes automatically on backend startup. To seed the database with participant data from the `.tsv` file:
+
 ```bash
 docker compose exec backend python -m import_participants
 ```
 
 ### Verification & Health Checks
+
 - **Backend Health:** Open `http://localhost:8000/APIhealth` (Should return `{"message": "API is running"}`).
 - **Frontend App:** Open `http://localhost:3000` and ensure the MRI Viewer loads successfully.
 - Check logs if issues arise: `docker compose logs -f`
 
 ### Recommended IDEs & Workflow
+
 - **VS Code:** Recommended with extensions for Python, Pylance, Prettier, ESLint, and Tailwind CSS.
 - **Cross-Platform:** Works natively on macOS/Linux. On Windows, ensure Docker Desktop is configured to use the **WSL2 backend**, and clone the repository directly inside the WSL filesystem (e.g., `~/projects/maps`) to avoid SQLite file-locking issues and drastically improve volume mount performance.
 
 ### Troubleshooting
+
 - **"ModuleNotFoundError: No module named 'nibabel'":** Ensure the backend container rebuilt correctly after a `requirements.txt` update (`docker compose build backend`).
 - **SQLite "database is locked":** Occurs frequently on Windows NTFS mounts. Always use WSL2 for Docker volumes on Windows.
 - **CORS Errors:** Verify `NEXT_PUBLIC_API_URL` in `.env` perfectly matches the URL you are using to access the frontend (e.g., `http://127.0.0.1:8000` vs `http://localhost:8000`).
