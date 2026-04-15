@@ -36,7 +36,7 @@ MaPS/
 ### Migrations & Seed Data
 The database schema initializes automatically on backend startup. To seed the database with participant data from the `.tsv` file:
 ```bash
-docker compose exec backend python -m backend.import_participants
+docker compose exec backend python -m import_participants
 ```
 
 ### Verification & Health Checks

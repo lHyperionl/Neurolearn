@@ -6,6 +6,11 @@ import nibabel as nib
 import os
 import csv
 import mimetypes
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from sqlalchemy.orm import Session
 
@@ -22,6 +27,28 @@ except ImportError:
 
 
 app = FastAPI()
+
+# Environment variable validation on startup
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting up FastAPI application...")
+    
+    # Check for OpenRouter API Key
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        logger.warning("❌ OPENROUTER_API_KEY is not set. AI chat features will not work.")
+    elif api_key == "vlozte-svoj-openrouter-kluc-sem":
+        logger.warning("❌ OPENROUTER_API_KEY is still set to placeholder 'vlozte-svoj-openrouter-kluc-sem'.")
+    else:
+        logger.info("✅ OPENROUTER_API_KEY is configured.")
+
+    # Ensure DB directory exists if we're in Docker
+    if os.path.exists("/app") and not os.path.exists("/app/db"):
+        try:
+            os.makedirs("/app/db", exist_ok=True)
+            logger.info("✅ Created /app/db directory for SQLite persistence.")
+        except Exception as e:
+            logger.error(f"❌ Failed to create /app/db directory: {e}")
 
 # Povolenie CORS (pre vývoj povolené všetko, v produkcii zmeniť)
 app.add_middleware(
@@ -51,16 +78,19 @@ def root():
 @app.get("/cases")
 def list_cases():
     try:
+        if not os.path.exists(BASE_DATA_DIR):
+            logger.warning(f"Data directory not found at {BASE_DATA_DIR}")
+            return {"cases": []}
+            
         cases = [
             d
             for d in os.listdir(BASE_DATA_DIR)
             if os.path.isdir(os.path.join(BASE_DATA_DIR, d)) and d.startswith("sub-")
         ]
         return {"cases": sorted(cases)}
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail=f"Data directory not found at {BASE_DATA_DIR}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error listing cases: {e}")
+        return {"cases": []}
 
 
 # Endpoint na výpis všetkých súborov v prípade (rekurzívne hľadanie)
