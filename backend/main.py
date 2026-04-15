@@ -1,13 +1,24 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, Response
 import nibabel as nib
 import os
 import csv
+import mimetypes
 
 from sqlalchemy.orm import Session
-from .database import get_db, Base, engine
-from .models import Participant
+
+mimetypes.init()
+mimetypes.add_type('application/gzip', '.gz')
+mimetypes.add_type('application/octet-stream', '.nii')
+
+try:
+    from .database import get_db, Base, engine
+    from .models import Participant
+except ImportError:
+    from database import get_db, Base, engine
+    from models import Participant
 
 
 app = FastAPI()
@@ -15,9 +26,11 @@ app = FastAPI()
 # Povolenie CORS (pre vývoj povolené všetko, v produkcii zmeniť)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
@@ -41,30 +54,38 @@ def list_cases():
         cases = [
             d
             for d in os.listdir(BASE_DATA_DIR)
-            if os.path.isdir(os.path.join(BASE_DATA_DIR, d))
+            if os.path.isdir(os.path.join(BASE_DATA_DIR, d)) and d.startswith("sub-")
         ]
-        return {"cases": cases}
+        return {"cases": sorted(cases)}
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail=f"Data directory not found at {BASE_DATA_DIR}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# Endpoint na výpis všetkých súborov v prípade
+# Endpoint na výpis všetkých súborov v prípade (rekurzívne hľadanie)
 @app.get("/cases/{case_id}/files")
 def list_case_files(case_id: str):
     case_dir = os.path.join(BASE_DATA_DIR, case_id)
     if not os.path.isdir(case_dir):
         raise HTTPException(status_code=404, detail="Prípad nenájdený")
     try:
-        files = [
-            f for f in os.listdir(case_dir) if os.path.isfile(os.path.join(case_dir, f))
-        ]
-        return {"files": files}
+        supported_extensions = (".nii", ".nii.gz")
+        files = []
+        for root, _, filenames in os.walk(case_dir):
+            for filename in filenames:
+                if filename.endswith(supported_extensions):
+                    # Získanie relatívnej cesty od case_dir
+                    rel_path = os.path.relpath(os.path.join(root, filename), case_dir)
+                    # Použitie dopredných lomítok pre konzistentné URL
+                    files.append(rel_path.replace(os.sep, "/"))
+        return {"files": sorted(files)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # Endpoint pre metadáta konkrétneho súboru v prípade
-@app.get("/metadata/{case_id}/{filename}")
+@app.get("/metadata/{case_id}/{filename:path}")
 def get_metadata(case_id: str, filename: str):
     file_path = os.path.join(BASE_DATA_DIR, case_id, filename)
     if not os.path.exists(file_path):
@@ -105,19 +126,21 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
     }
 
 
+from fastapi.responses import FileResponse, Response
+
 # Statické súbory pre všetky prípady
-class MultiCaseStaticFiles(StaticFiles):
-    def __init__(self, base_directory: str):
-        super().__init__(directory=base_directory)
-        self.base_directory = base_directory
+@app.get("/files/{case_id}/{filename:path}")
+async def get_case_file(case_id: str, filename: str):
+    file_path = os.path.join(BASE_DATA_DIR, case_id, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    media_type = "application/x-gzip" if file_path.endswith(".gz") else "application/octet-stream"
+    
+    response = FileResponse(file_path, media_type=media_type)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
-    async def get_response(self, path: str, scope):
-        # path: "{case_id}/{filename}"
-        return await super().get_response(path, scope)
-
-
-# Mount statických súborov na /files/{case_id}/{filename}
-app.mount("/files", MultiCaseStaticFiles(BASE_DATA_DIR), name="files")
 
 if __name__ == "__main__":
     import uvicorn

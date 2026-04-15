@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, String, CheckConstraint
-from .database import Base
+try:
+    from .database import Base
+except ImportError:
+    from database import Base
 
 class Participant(Base):
     __tablename__ = "participants"

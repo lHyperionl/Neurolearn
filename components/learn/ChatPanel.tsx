@@ -1,13 +1,20 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChatMessage, initialChatMessages } from "@/lib/mock-data";
+import { ChatMessage } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+const INITIAL_MESSAGE: ChatMessage = {
+    id: "1",
+    role: "ai",
+    content:
+        "Hello! I'm your NeuroLearn AI assistant. I can help you understand MRI scans and brain pathologies. What would you like to know?",
+    timestamp: new Date(),
+};
+
 const ChatPanel = () => {
-    const [messages, setMessages] =
-        useState<ChatMessage[]>(initialChatMessages);
+    const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
     const [inputValue, setInputValue] = useState("");
     const [isThinking, setIsThinking] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -20,7 +27,11 @@ const ChatPanel = () => {
         scrollToBottom();
     }, [messages, isThinking]);
 
-    const handleSend = () => {
+    const handleClear = () => {
+        setMessages([INITIAL_MESSAGE]);
+    };
+
+    const handleSend = async () => {
         if (!inputValue.trim()) return;
 
         const newMessage: ChatMessage = {
@@ -30,21 +41,45 @@ const ChatPanel = () => {
             timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, newMessage]);
+        const updatedMessages = [...messages, newMessage];
+        setMessages(updatedMessages);
         setInputValue("");
         setIsThinking(true);
 
-        setTimeout(() => {
+        try {
+            const response = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: updatedMessages }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "API request failed");
+            }
+
             const aiResponse: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 role: "ai",
-                content:
-                    "I acknowledge your query. In the active diagnostic mode, notice how the pathological findings suggest rapid cellular division consistent with the primary diagnosis.",
+                content: data.content,
                 timestamp: new Date(),
             };
             setMessages((prev) => [...prev, aiResponse]);
+        } catch (error) {
+            const errorMessage: ChatMessage = {
+                id: (Date.now() + 1).toString(),
+                role: "ai",
+                content:
+                    error instanceof Error
+                        ? error.message
+                        : "AI temporarily unavailable. Please try again.",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+        } finally {
             setIsThinking(false);
-        }, 1500);
+        }
     };
 
     return (
@@ -69,12 +104,18 @@ const ChatPanel = () => {
                         </p>
                     </div>
                 </div>
-                <span
-                    className="material-symbols-outlined text-slate-500"
-                    style={{ fontSize: "18px" }}
+                <button
+                    onClick={handleClear}
+                    className="text-slate-500 hover:text-[#a8e8ff] transition-colors p-1"
+                    title="Clear chat"
                 >
-                    more_vert
-                </span>
+                    <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: "18px" }}
+                    >
+                        delete
+                    </span>
+                </button>
             </div>
 
             {/* Messages */}

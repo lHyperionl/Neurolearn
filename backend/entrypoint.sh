@@ -1,8 +1,10 @@
 #!/bin/sh
-set -e
+set -eu
+
+cd /app
 
 # Run migrations and seed data
-python -m backend.import_participants || echo "Seeding failed or already seeded"
+python -m import_participants || echo "Seeding failed or already seeded"
 
 # Start the server
-exec uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+exec uvicorn main:app --reload --host 0.0.0.0 --port 8000
