@@ -3,13 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import MRIViewerNiiVue from "@/components/learn/MRIViewerNiiVue";
+import InteractiveMRIViewer from "@/components/learn/InteractiveMRIViewer";
 import DiagnosisCard, { DiagnosisInfo } from "@/components/learn/DiagnosisCard";
 import ChatPanel from "@/components/learn/ChatPanel";
 import Sidebar from "@/components/nav/Sidebar";
 import { motion } from "framer-motion";
-
-type ViewMode = "axial" | "coronal" | "sagittal" | "render";
 
 interface PatientInfo {
     participant_id?: string;
@@ -65,8 +63,6 @@ export default function LearnCasePage() {
     const [diagnosisLoading, setDiagnosisLoading] = useState(false);
     const [diagnosisError, setDiagnosisError] = useState<string | null>(null);
     const [showDiagnosis, setShowDiagnosis] = useState(false);
-
-    const [viewMode, setViewMode] = useState<ViewMode>("axial");
 
     useEffect(() => {
         setCaseListLoading(true);
@@ -177,7 +173,7 @@ export default function LearnCasePage() {
     );
 
     const sequenceLabel = getSequenceLabel(selectedFile);
-    const viewLabel = viewMode === "render" ? "3D" : viewMode.toUpperCase();
+    const viewLabel = "Interactive";
     const hasOverlay = Boolean(overlayFile && selectedFile && overlayFile !== selectedFile);
 
     const handleNextCase = () => {
@@ -301,7 +297,7 @@ export default function LearnCasePage() {
 
                         {selectedFile && (
                             <div className="flex flex-col gap-3">
-                                <MRIViewerNiiVue
+                                <InteractiveMRIViewer
                                     url={`${API_URL}/files/${selectedCase}/${selectedFile}`}
                                     patientInfo={
                                         patientInfo
@@ -315,12 +311,12 @@ export default function LearnCasePage() {
                                     }
                                     patientLoading={patientLoading}
                                     patientError={patientError}
-                                    overlayToggleUrl={
+                                    overlayUrl={
                                         showOverlay && hasOverlay && overlayFile
                                             ? `${API_URL}/files/${selectedCase}/${overlayFile}`
                                             : undefined
                                     }
-                                    onViewModeChange={setViewMode}
+                                    className="h-full"
                                 />
                                 {hasOverlay && (
                                     <button

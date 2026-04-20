@@ -3,12 +3,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Niivue } from "@niivue/niivue";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
 
 interface InteractiveMRIViewerProps {
     url: string;
     overlayUrl?: string;
     className?: string;
+    patientInfo?: {
+        participantId?: string | null;
+        diagnosis?: string | null;
+        age?: string | null;
+        gender?: string | null;
+    } | null;
+    patientLoading?: boolean;
+    patientError?: string | null;
 }
 
 type ViewMode = "axial" | "coronal" | "sagittal" | "render";
@@ -24,13 +31,25 @@ export default function InteractiveMRIViewer({
     url,
     overlayUrl,
     className,
+    patientInfo,
+    patientLoading,
+    patientError,
 }: InteractiveMRIViewerProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const nvRef = useRef<Niivue | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>("axial");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [colormap, setColormap] = useState("gray");
+    const [renderOpacity, setRenderOpacity] = useState(1);
+    const [renderIllumination, setRenderIllumination] = useState(0.6);
+    const [gradientOpacity, setGradientOpacity] = useState(0.25);
+    const [renderSilhouette, setRenderSilhouette] = useState(0.1);
+    const [clipDepth, setClipDepth] = useState(2.0);
+    const [clipAzimuth, setClipAzimuth] = useState(35);
+    const [clipElevation, setClipElevation] = useState(15);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const [thumbnails, setThumbnails] = useState<
         Record<ViewMode, string | null>
     >({
@@ -39,6 +58,47 @@ export default function InteractiveMRIViewer({
         sagittal: null,
         render: null,
     });
+
+    const renderDefaults = {
+        opacity: 1,
+        illumination: 0.6,
+        gradient: 0.25,
+        silhouette: 0.1,
+        clipDepth: 2.0,
+        azimuth: 35,
+        elevation: 15,
+    };
+
+    const applyRenderDefaults = useCallback(() => {
+        setRenderOpacity(renderDefaults.opacity);
+        setRenderIllumination(renderDefaults.illumination);
+        setGradientOpacity(renderDefaults.gradient);
+        setRenderSilhouette(renderDefaults.silhouette);
+        setClipDepth(renderDefaults.clipDepth);
+        setClipAzimuth(renderDefaults.azimuth);
+        setClipElevation(renderDefaults.elevation);
+
+        if (nvRef.current?.volumes?.length) {
+            nvRef.current.setOpacity(0, renderDefaults.opacity);
+            nvRef.current.setRenderAzimuthElevation(
+                renderDefaults.azimuth,
+                renderDefaults.elevation,
+            );
+            nvRef.current.setClipPlane([
+                renderDefaults.clipDepth,
+                renderDefaults.azimuth,
+                renderDefaults.elevation,
+            ]);
+            nvRef.current.setScale(1.2);
+            void nvRef.current.setVolumeRenderIllumination(
+                renderDefaults.illumination,
+            );
+            void nvRef.current.setGradientOpacity(
+                renderDefaults.gradient,
+                renderDefaults.silhouette,
+            );
+        }
+    }, []);
 
     // Initialize Niivue
     useEffect(() => {
@@ -53,7 +113,7 @@ export default function InteractiveMRIViewer({
         });
 
         nvRef.current = nv;
-        nv.attachTo("niivue-canvas");
+        nv.attachToCanvas(canvasRef.current);
         nv.setSliceType(nv.sliceTypeAxial);
 
         return () => {
@@ -75,7 +135,10 @@ export default function InteractiveMRIViewer({
         }
 
         setViewMode(mode);
-    }, []);
+        if (mode === "render") {
+            applyRenderDefaults();
+        }
+    }, [applyRenderDefaults]);
 
     // Load Volume and Generate Thumbnails
     useEffect(() => {
@@ -143,10 +206,67 @@ export default function InteractiveMRIViewer({
         loadVolume();
     }, [url, overlayUrl]);
 
+    useEffect(() => {
+        if (viewMode !== "render") return;
+        if (!nvRef.current?.volumes?.length) return;
+
+        nvRef.current.setOpacity(0, renderOpacity);
+        nvRef.current.setRenderAzimuthElevation(clipAzimuth, clipElevation);
+        nvRef.current.setClipPlane([clipDepth, clipAzimuth, clipElevation]);
+        nvRef.current.setScale(1.2);
+        void nvRef.current.setVolumeRenderIllumination(renderIllumination);
+        void nvRef.current.setGradientOpacity(gradientOpacity, renderSilhouette);
+    }, [
+        viewMode,
+        renderOpacity,
+        renderIllumination,
+        gradientOpacity,
+        renderSilhouette,
+        clipDepth,
+        clipAzimuth,
+        clipElevation,
+    ]);
+
+    const handleFullscreenToggle = async () => {
+        if (!containerRef.current) return;
+        if (document.fullscreenElement) {
+            await document.exitFullscreen();
+            return;
+        }
+        await containerRef.current.requestFullscreen();
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(Boolean(document.fullscreenElement));
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        };
+    }, []);
+
+    useEffect(() => {
+        const resize = () => {
+            const nv = nvRef.current as any;
+            if (typeof nv?.resizeListener === "function") {
+                nv.resizeListener();
+            } else if (typeof nv?.resize === "function") {
+                nv.resize();
+            }
+        };
+
+        const handle = window.setTimeout(resize, 0);
+        return () => window.clearTimeout(handle);
+    }, [isFullscreen]);
+
     return (
         <div
+            ref={containerRef}
             className={cn(
-                "flex flex-col h-full bg-[#1e2023] border border-[#3c494e] p-4 mri-glow relative",
+                "flex flex-col h-full min-h-[1000px] bg-[#1e2023] border border-[#3c494e] p-4 mri-glow relative",
+                isFullscreen && "w-screen h-screen max-h-none p-3 rounded-none border-cyan-500/20",
                 className,
             )}
         >
@@ -156,6 +276,18 @@ export default function InteractiveMRIViewer({
                     [ INTERACTIVE_VIEWER_V2.0 ]
                 </h3>
                 <div className="flex gap-4">
+                    <button
+                        onClick={handleFullscreenToggle}
+                        className="p-1 hover:bg-[#333538] transition-colors text-cyan-500"
+                        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                    >
+                        <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: "18px" }}
+                        >
+                            {isFullscreen ? "close_fullscreen" : "fullscreen"}
+                        </span>
+                    </button>
                     <select
                         value={colormap}
                         onChange={(e) => {
@@ -227,10 +359,37 @@ export default function InteractiveMRIViewer({
                 </div>
             </div>
 
+            {(patientLoading || patientError || patientInfo) && (
+                <div className="mb-4 rounded-lg border border-cyan-500/10 bg-[#0f1117] p-3">
+                    <div className="font-mono text-xs text-slate-300 mb-2">Patient</div>
+                    {patientLoading && (
+                        <div className="text-cyan-400 font-mono text-xs">Loading...</div>
+                    )}
+                    {patientError && (
+                        <div className="text-red-400 font-mono text-xs">{patientError}</div>
+                    )}
+                    {patientInfo && !patientLoading && !patientError && (
+                        <div className="space-y-1">
+                            <div className="text-slate-300 font-mono text-xs">
+                                ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
+                            </div>
+                            <div className="text-slate-300 font-mono text-xs">
+                                Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
+                            </div>
+                            <div className="text-slate-300 font-mono text-xs">
+                                Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
+                            </div>
+                            <div className="text-slate-300 font-mono text-xs">
+                                Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Main View Area */}
             <div className="relative flex-1 bg-black overflow-hidden rounded-lg border border-[#3c494e]/50">
                 <canvas
-                    id="niivue-canvas"
                     ref={canvasRef}
                     className="w-full h-full"
                 />
