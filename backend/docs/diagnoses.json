@@ -1,0 +1,93 @@
+{
+  "CONTROL": {
+    "name": "Healthy Control",
+    "shortName": "CONTROL",
+    "grade": "N/A",
+    "tags": ["Reference"],
+    "description": "No known pathology. MRI is expected to show normal anatomy and signal characteristics for age.",
+    "keyFeatures": [
+      "No focal lesions or mass effect.",
+      "Normal ventricular size and sulcal pattern.",
+      "No abnormal enhancement or edema."
+    ],
+    "differentials": ["N/A"]
+  },
+  "SCHZ": {
+    "name": "Schizophrenia",
+    "shortName": "SCHZ",
+    "grade": "N/A",
+    "tags": ["Psychiatric"],
+    "description": "Neuroimaging may be normal or show subtle structural changes. Findings are supportive, not diagnostic.",
+    "keyFeatures": [
+      "Possible mild ventricular enlargement.",
+      "Subtle cortical or hippocampal volume changes.",
+      "No focal mass or acute lesion."
+    ],
+    "differentials": ["Bipolar Disorder", "Major Depression"]
+  },
+  "BIPOLAR": {
+    "name": "Bipolar Disorder",
+    "shortName": "BIPOLAR",
+    "grade": "N/A",
+    "tags": ["Psychiatric"],
+    "description": "Structural MRI is often normal; changes are subtle and non-specific. Imaging is mainly used to exclude other causes.",
+    "keyFeatures": [
+      "No focal lesion expected.",
+      "Possible subtle volume changes in limbic regions.",
+      "No abnormal enhancement or edema."
+    ],
+    "differentials": ["Schizophrenia", "Major Depression"]
+  },
+  "ADHD": {
+    "name": "Attention Deficit Hyperactivity Disorder",
+    "shortName": "ADHD",
+    "grade": "N/A",
+    "tags": ["Neurodevelopmental", "Psychiatric"],
+    "description": "Structural MRI is typically clinicaly unremarkable. Research-level morphometry may show subtle volume reductions in circuits involving the basal ganglia and prefrontal cortex.",
+    "keyFeatures": [
+      "No gross structural abnormalities or focal lesions.",
+      "Possible subtle reduction in total gray matter volume.",
+      "Potential volume differences in the caudate nucleus or cerebellum (research context only)."
+    ],
+    "differentials": ["Learning Disabilities", "Anxiety Disorders", "Bipolar Disorder"]
+  },
+  "GBM": {
+    "name": "Glioblastoma Multiforme (GBM)",
+    "shortName": "GBM",
+    "grade": "Grade IV",
+    "tags": ["Malignant"],
+    "description": "Aggressive primary brain tumor with necrosis and infiltrative growth.",
+    "keyFeatures": [
+      "Irregular ring enhancement around necrosis.",
+      "Marked vasogenic edema.",
+      "Mass effect and possible midline shift."
+    ],
+    "differentials": ["Metastasis", "Abscess", "High-grade Astrocytoma"]
+  },
+  "MENINGIOMA": {
+    "name": "Meningioma",
+    "shortName": "Meningioma",
+    "grade": "Grade I",
+    "tags": ["Benign"],
+    "description": "Extra-axial tumor arising from meninges, typically well-circumscribed with uniform enhancement.",
+    "keyFeatures": [
+      "Dural tail sign.",
+      "Intense, homogeneous enhancement.",
+      "Extra-axial mass with broad dural attachment."
+    ],
+    "differentials": ["Dural Metastasis", "Hemangiopericytoma"]
+  },
+  "MS": {
+    "name": "Multiple Sclerosis",
+    "shortName": "MS",
+    "grade": "N/A",
+    "tags": ["Demyelinating"],
+    "description": "Autoimmune demyelinating disease with characteristic white matter lesions.",
+    "keyFeatures": [
+      "Periventricular ovoid lesions.",
+      "Dawson's fingers on FLAIR.",
+      "New lesions may enhance."
+    ],
+    "differentials": ["ADEM", "Small Vessel Disease", "Vasculitis"]
+  }
+}

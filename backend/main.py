@@ -7,6 +7,7 @@ import os
 import csv
 import mimetypes
 import logging
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -65,6 +66,7 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data")
 PARTICIPANTS_PATH = os.path.join(BASE_DIR, "docs", "participants.tsv")
+DIAGNOSES_PATH = os.path.join(BASE_DIR, "docs", "diagnoses.json")
 
 Base.metadata.create_all(bind=engine)
 
@@ -156,7 +158,29 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
     }
 
 
-from fastapi.responses import FileResponse, Response
+def load_diagnoses() -> dict:
+    if not os.path.exists(DIAGNOSES_PATH):
+        return {}
+    try:
+        with open(DIAGNOSES_PATH, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            if isinstance(data, dict):
+                return data
+            return {}
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail=f"Invalid diagnoses.json: {exc}")
+
+
+@app.get("/diagnoses/{diagnosis_key}")
+def get_diagnosis_info(diagnosis_key: str):
+    diagnoses = load_diagnoses()
+    key = diagnosis_key.strip()
+    if key in diagnoses:
+        return diagnoses[key]
+    key_upper = key.upper()
+    if key_upper in diagnoses:
+        return diagnoses[key_upper]
+    raise HTTPException(status_code=404, detail="Diagnosis not found")
 
 # Statické súbory pre všetky prípady
 @app.get("/files/{case_id}/{filename:path}")
