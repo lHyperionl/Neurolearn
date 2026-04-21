@@ -4,6 +4,13 @@ import { useEffect, useState } from "react";
 import MRITestViewer from "@/components/test/MRITestViewer";
 
 export default function TestPage() {
+  const diagnosisLabelMap: Record<string, string> = {
+    CONTROL: "Healthy",
+    SCHZ: "Schizophrenia",
+    BIPOLAR: "Bipolar disorder",
+    ADHD: "ADHD",
+  };
+
   const [allCases, setAllCases] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [score, setScore] = useState(0);
@@ -13,6 +20,17 @@ export default function TestPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
 
   const questionCount = 10;
+  const totalQuestions = Math.min(
+    questionCount,
+    allCases.length || questionCount,
+  );
+  const completedQuestions = Math.min(
+    question + (answered ? 1 : 0),
+    totalQuestions,
+  );
+  const progressPercent = Math.round(
+    (completedQuestions / totalQuestions) * 100,
+  );
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/questions/qenerate_pids")
@@ -69,8 +87,31 @@ export default function TestPage() {
     setSelectedAnswer(null);
   };
 
+  const getAnswerLabel = (value: string) => {
+    return diagnosisLabelMap[value.toUpperCase()] ?? value;
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto space-y-6 relative">
+      {!isFinished && (
+        <div className="sticky top-0 z-40 pt-2">
+          <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] p-3">
+            <div className="flex items-center justify-between mb-2 font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf]">
+              <span>Test Progress</span>
+              <span>
+                {completedQuestions}/{totalQuestions} ({progressPercent}%)
+              </span>
+            </div>
+            <div className="h-2 w-full overflow-hidden bg-[#282a2d] border border-[#3c494e]">
+              <div
+                className="h-full bg-[#a8e8ff] shadow-[0_0_16px_rgba(168,232,255,0.45)] transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {currentQuestion && !isFinished && (
         <>
           <MRITestViewer
@@ -80,7 +121,6 @@ export default function TestPage() {
 
           <div className="font-mono text-xs text-[#bbc9cf] flex gap-6">
             <span>Score: {score}</span>
-            <span>Subject: {currentQuestion.participant_id}</span>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
@@ -112,7 +152,9 @@ export default function TestPage() {
                   onClick={() => handleAnswer(value, isCorrect)}
                   className={`${base} ${style}`}
                 >
-                  <span className="font-bold text-sm">{value}</span>
+                  <span className="font-bold text-sm">
+                    {getAnswerLabel(value)}
+                  </span>
                 </button>
               );
             })}
