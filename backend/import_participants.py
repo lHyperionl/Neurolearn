@@ -1,8 +1,12 @@
 import csv
 from pathlib import Path
 
-from .database import SessionLocal, Base, engine
-from .models import Participant
+try:
+    from .database import SessionLocal, Base, engine
+    from .models import Participant
+except ImportError:
+    from database import SessionLocal, Base, engine
+    from models import Participant
 
 Base.metadata.create_all(bind=engine)
 

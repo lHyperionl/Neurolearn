@@ -1,23 +1,64 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, Response
 import nibabel as nib
 import os
 import csv
+import mimetypes
+import logging
+import json
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from sqlalchemy.orm import Session
-from .database import get_db, Base, engine
-from .models import Participant
+
+mimetypes.init()
+mimetypes.add_type('application/gzip', '.gz')
+mimetypes.add_type('application/octet-stream', '.nii')
+
+try:
+    from .database import get_db, Base, engine
+    from .models import Participant
+except ImportError:
+    from database import get_db, Base, engine
+    from models import Participant
 
 
 app = FastAPI()
+
+# Environment variable validation on startup
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting up FastAPI application...")
+    
+    # Check for OpenRouter API Key
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        logger.warning("❌ OPENROUTER_API_KEY is not set. AI chat features will not work.")
+    elif api_key == "vlozte-svoj-openrouter-kluc-sem":
+        logger.warning("❌ OPENROUTER_API_KEY is still set to placeholder 'vlozte-svoj-openrouter-kluc-sem'.")
+    else:
+        logger.info("✅ OPENROUTER_API_KEY is configured.")
+
+    # Ensure DB directory exists if we're in Docker
+    if os.path.exists("/app") and not os.path.exists("/app/db"):
+        try:
+            os.makedirs("/app/db", exist_ok=True)
+            logger.info("✅ Created /app/db directory for SQLite persistence.")
+        except Exception as e:
+            logger.error(f"❌ Failed to create /app/db directory: {e}")
 
 # Povolenie CORS (pre vývoj povolené všetko, v produkcii zmeniť)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 
@@ -25,36 +66,58 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data")
 PARTICIPANTS_PATH = os.path.join(BASE_DIR, "docs", "participants.tsv")
+DIAGNOSES_PATH = os.path.join(BASE_DIR, "docs", "diagnoses.json")
 
 Base.metadata.create_all(bind=engine)
+
 
 @app.get("/APIhealth")
 def root():
     return {"message": "API is running"}
 
+
 # Endpoint na výpis všetkých prípadov (adresárov)
 @app.get("/cases")
 def list_cases():
     try:
-        cases = [d for d in os.listdir(BASE_DATA_DIR) if os.path.isdir(os.path.join(BASE_DATA_DIR, d))]
-        return {"cases": cases}
+        if not os.path.exists(BASE_DATA_DIR):
+            logger.warning(f"Data directory not found at {BASE_DATA_DIR}")
+            return {"cases": []}
+            
+        cases = [
+            d
+            for d in os.listdir(BASE_DATA_DIR)
+            if os.path.isdir(os.path.join(BASE_DATA_DIR, d)) and d.startswith("sub-")
+        ]
+        return {"cases": sorted(cases)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error listing cases: {e}")
+        return {"cases": []}
 
-# Endpoint na výpis všetkých súborov v prípade
+
+# Endpoint na výpis všetkých súborov v prípade (rekurzívne hľadanie)
 @app.get("/cases/{case_id}/files")
 def list_case_files(case_id: str):
     case_dir = os.path.join(BASE_DATA_DIR, case_id)
     if not os.path.isdir(case_dir):
         raise HTTPException(status_code=404, detail="Prípad nenájdený")
     try:
-        files = [f for f in os.listdir(case_dir) if os.path.isfile(os.path.join(case_dir, f))]
-        return {"files": files}
+        supported_extensions = (".nii", ".nii.gz")
+        files = []
+        for root, _, filenames in os.walk(case_dir):
+            for filename in filenames:
+                if filename.endswith(supported_extensions):
+                    # Získanie relatívnej cesty od case_dir
+                    rel_path = os.path.relpath(os.path.join(root, filename), case_dir)
+                    # Použitie dopredných lomítok pre konzistentné URL
+                    files.append(rel_path.replace(os.sep, "/"))
+        return {"files": sorted(files)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 # Endpoint pre metadáta konkrétneho súboru v prípade
-@app.get("/metadata/{case_id}/{filename}")
+@app.get("/metadata/{case_id}/{filename:path}")
 def get_metadata(case_id: str, filename: str):
     file_path = os.path.join(BASE_DATA_DIR, case_id, filename)
     if not os.path.exists(file_path):
@@ -69,10 +132,11 @@ def get_metadata(case_id: str, filename: str):
             "datatype": str(header.get_data_dtype()),
             "vox_offset": float(header["vox_offset"]),
             "units": header.get_xyzt_units(),
-            "affine": img.affine.tolist()
+            "affine": img.affine.tolist(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
     
 #endpoint na pocet participantov
 @app.get("/participants_count")
@@ -110,7 +174,6 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
         "gender": participant.gender,
     }
 
-
 @app.get("/questions/qenerate_pids")
 def get_questions(db: Session = Depends(get_db)):
     import random
@@ -138,19 +201,43 @@ def get_questions(participant_id: str, db: Session = Depends(get_db)):
         "correct": diagnosis
     }
 
+def load_diagnoses() -> dict:
+    if not os.path.exists(DIAGNOSES_PATH):
+        return {}
+    try:
+        with open(DIAGNOSES_PATH, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            if isinstance(data, dict):
+                return data
+            return {}
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail=f"Invalid diagnoses.json: {exc}")
+
+@app.get("/diagnoses/{diagnosis_key}")
+def get_diagnosis_info(diagnosis_key: str):
+    diagnoses = load_diagnoses()
+    key = diagnosis_key.strip()
+    if key in diagnoses:
+        return diagnoses[key]
+    key_upper = key.upper()
+    if key_upper in diagnoses:
+        return diagnoses[key_upper]
+    raise HTTPException(status_code=404, detail="Diagnosis not found")
+
 # Statické súbory pre všetky prípady
-class MultiCaseStaticFiles(StaticFiles):
-    def __init__(self, base_directory: str):
-        super().__init__(directory=base_directory)
-        self.base_directory = base_directory
-
-    async def get_response(self, path: str, scope):
-        # path: "{case_id}/{filename}"
-        return await super().get_response(path, scope)
-
-# Mount statických súborov na /files/{case_id}/{filename}
-app.mount("/files", MultiCaseStaticFiles(BASE_DATA_DIR), name="files")
+@app.get("/files/{case_id}/{filename:path}")
+async def get_case_file(case_id: str, filename: str):
+    file_path = os.path.join(BASE_DATA_DIR, case_id, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    media_type = "application/x-gzip" if file_path.endswith(".gz") else "application/octet-stream"
+    
+    response = FileResponse(file_path, media_type=media_type)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

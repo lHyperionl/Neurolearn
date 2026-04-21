@@ -72,6 +72,7 @@ const QuestionCard = ({ question, onAnswer, onNext }: QuestionCardProps) => {
                             fill
                             sizes="(max-width: 768px) 100vw, 50vw"
                             className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                            unoptimized
                         />
                         {/* HUD overlays */}
                         <div className="absolute top-2 left-2 flex gap-2 z-10">

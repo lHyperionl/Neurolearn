@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Niivue } from "@niivue/niivue";
 
+type ViewMode = "axial" | "coronal" | "sagittal" | "render";
+
 interface MRIViewerNiiVueProps {
 
   url: string; // URL for the NIfTI file (e.g., from backend)
@@ -17,10 +19,8 @@ interface MRIViewerNiiVueProps {
   } | null;
   patientLoading?: boolean;
   patientError?: string | null;
-
+  onViewModeChange?: (mode: ViewMode) => void;
 }
-
-type ViewMode = "axial" | "coronal" | "sagittal" | "render";
 
 export default function MRIViewerNiiVue({
   url,
@@ -30,6 +30,7 @@ export default function MRIViewerNiiVue({
   patientInfo,
   patientLoading,
   patientError,
+  onViewModeChange,
 }: MRIViewerNiiVueProps) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -61,6 +62,16 @@ export default function MRIViewerNiiVue({
 
   const [clipElevation, setClipElevation] = useState(15);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const renderDefaults = {
+    opacity: 1,
+    illumination: 0.6,
+    gradient: 0.25,
+    silhouette: 0.1,
+    clipDepth: 2.0,
+    azimuth: 35,
+    elevation: 15,
+  };
 
 
 
@@ -128,6 +139,34 @@ export default function MRIViewerNiiVue({
 
   }, [colormap]);
 
+  const applyRenderDefaults = useCallback(() => {
+    setRenderOpacity(renderDefaults.opacity);
+    setRenderIllumination(renderDefaults.illumination);
+    setGradientOpacity(renderDefaults.gradient);
+    setRenderSilhouette(renderDefaults.silhouette);
+    setClipDepth(renderDefaults.clipDepth);
+    setClipAzimuth(renderDefaults.azimuth);
+    setClipElevation(renderDefaults.elevation);
+
+    if (nvRef.current.volumes.length > 0) {
+      nvRef.current.setOpacity(0, renderDefaults.opacity);
+      nvRef.current.setRenderAzimuthElevation(renderDefaults.azimuth, renderDefaults.elevation);
+      nvRef.current.setClipPlane([
+        renderDefaults.clipDepth,
+        renderDefaults.azimuth,
+        renderDefaults.elevation,
+      ]);
+      nvRef.current.setScale(1.2);
+      void nvRef.current.setVolumeRenderIllumination(renderDefaults.illumination);
+      void nvRef.current.setGradientOpacity(renderDefaults.gradient, renderDefaults.silhouette);
+    }
+  }, []);
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    onViewModeChange?.(mode);
+  };
+
 
 
   // 1. Effect: Initialize the canvas (once)
@@ -186,6 +225,9 @@ export default function MRIViewerNiiVue({
 
         applyViewMode(viewMode);
         applyColormap();
+        if (viewMode === "render") {
+          applyRenderDefaults();
+        }
 
         setLoading(false);
 
@@ -231,42 +273,30 @@ export default function MRIViewerNiiVue({
   // 4. Effect: Apply 3D settings (render mode)
 
   useEffect(() => {
-
     if (viewMode !== "render") return;
-
     if (nvRef.current.volumes.length === 0) return;
 
     nvRef.current.setOpacity(0, renderOpacity);
-
     nvRef.current.setRenderAzimuthElevation(clipAzimuth, clipElevation);
-
     nvRef.current.setClipPlane([clipDepth, clipAzimuth, clipElevation]);
-
     nvRef.current.setScale(1.2);
-
     void nvRef.current.setVolumeRenderIllumination(renderIllumination);
-
     void nvRef.current.setGradientOpacity(gradientOpacity, renderSilhouette);
-
   }, [
-
     viewMode,
-
     renderOpacity,
-
     renderIllumination,
-
     gradientOpacity,
-
     renderSilhouette,
-
     clipDepth,
-
     clipAzimuth,
-
     clipElevation,
-
   ]);
+
+  useEffect(() => {
+    if (viewMode !== "render") return;
+    applyRenderDefaults();
+  }, [applyRenderDefaults, viewMode]);
 
 
 
@@ -287,14 +317,6 @@ export default function MRIViewerNiiVue({
   };
 
   const handleResetView = () => {
-    setRenderOpacity(1);
-    setRenderIllumination(0.6);
-    setGradientOpacity(0.25);
-    setRenderSilhouette(0.1);
-    setClipDepth(2.0);
-    setClipAzimuth(35);
-    setClipElevation(15);
-
     if (nvRef.current.volumes.length > 0) {
       nvRef.current.setDefaults(undefined, true);
     }
@@ -303,12 +325,7 @@ export default function MRIViewerNiiVue({
     applyColormap();
 
     if (viewMode === "render") {
-      nvRef.current.setOpacity(0, 1);
-      nvRef.current.setRenderAzimuthElevation(35, 15);
-      nvRef.current.setClipPlane([2.0, 35, 15]);
-      nvRef.current.setScale(1.2);
-      void nvRef.current.setVolumeRenderIllumination(0.6);
-      void nvRef.current.setGradientOpacity(0.25, 0.1);
+      applyRenderDefaults();
     } else {
       nvRef.current.setScale(1);
     }
@@ -325,18 +342,48 @@ export default function MRIViewerNiiVue({
     };
   }, []);
 
+  useEffect(() => {
+    const resize = () => {
+      const nv = nvRef.current as any;
+      if (typeof nv?.resizeListener === "function") {
+        nv.resizeListener();
+      } else if (typeof nv?.resize === "function") {
+        nv.resize();
+      }
+    };
+
+    const handle = window.setTimeout(resize, 0);
+    return () => window.clearTimeout(handle);
+  }, [isFullscreen]);
+
 
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-[70vh] min-h-[560px] max-h-[900px] bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden p-5"
+      className={
+        isFullscreen
+          ? "w-screen h-screen max-h-none bg-[#0f1117] rounded-none border border-cyan-500/20 shadow-2xl relative overflow-hidden p-0"
+          : "w-full h-[70vh] min-h-[560px] max-h-[900px] bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden p-5"
+      }
       style={style}
     >
       {/* Background Glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
-      <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
-        <div className="bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-hidden">
+      <div
+        className={
+          isFullscreen
+            ? "relative z-10 h-full"
+            : "relative z-10 h-full grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4"
+        }
+      >
+        <div
+          className={
+            isFullscreen
+              ? "absolute top-4 left-4 z-20 w-[320px] max-h-[calc(100vh-2rem)] overflow-y-auto bg-[#0d1015]/95 rounded-xl border border-cyan-500/20 p-4"
+              : "bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-hidden"
+          }
+        >
           {(patientLoading || patientError || patientInfo) && (
             <div className="mb-4 rounded-lg border border-cyan-500/10 bg-[#0f1117] p-3">
               <div className="font-mono text-xs text-slate-300 mb-2">Patient</div>
@@ -374,7 +421,7 @@ export default function MRIViewerNiiVue({
               <button
                 key={item.key}
                 type="button"
-                onClick={() => setViewMode(item.key as ViewMode)}
+                onClick={() => handleViewModeChange(item.key as ViewMode)}
                 className={
                   viewMode === item.key
                     ? "px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs"
@@ -502,7 +549,13 @@ export default function MRIViewerNiiVue({
             )}
           </div>
         </div>
-        <div className="bg-black/40 rounded-xl border border-cyan-500/10 p-3 flex flex-col relative">
+        <div
+          className={
+            isFullscreen
+              ? "bg-black/60 rounded-none border-0 p-0 flex flex-col relative h-full"
+              : "bg-black/40 rounded-xl border border-cyan-500/10 p-3 flex flex-col relative"
+          }
+        >
           <button
             type="button"
             onClick={handleFullscreenToggle}
