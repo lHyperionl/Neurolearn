@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import MRITestViewer from "@/components/test/MRITestViewer";
 
 export default function TestPage() {
+  const questionPrompt = "What diagnosis can you see on the MRI?";
+
   const diagnosisLabelMap: Record<string, string> = {
     CONTROL: "Healthy",
     SCHZ: "Schizophrenia",
@@ -92,95 +94,116 @@ export default function TestPage() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto space-y-6 relative">
+    <div className="w-[80vw] max-w-[80vw] mx-auto space-y-6 relative">
       {!isFinished && (
         <div className="sticky top-0 z-40 pt-2">
-          <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] p-3">
-            <div className="flex items-center justify-between mb-2 font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf]">
-              <span>Test Progress</span>
-              <span>
-                {completedQuestions}/{totalQuestions} ({progressPercent}%)
-              </span>
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] gap-6 items-stretch">
+            <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] p-3">
+              <div className="flex items-center justify-between mb-2 font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf]">
+                <span>Test Progress</span>
+                <span>
+                  {completedQuestions}/{totalQuestions} ({progressPercent}%)
+                </span>
+              </div>
+              <div className="h-2 w-full overflow-hidden bg-[#282a2d] border border-[#3c494e]">
+                <div
+                  className="h-full bg-[#a8e8ff] shadow-[0_0_16px_rgba(168,232,255,0.45)] transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
             </div>
-            <div className="h-2 w-full overflow-hidden bg-[#282a2d] border border-[#3c494e]">
-              <div
-                className="h-full bg-[#a8e8ff] shadow-[0_0_16px_rgba(168,232,255,0.45)] transition-all duration-500"
-                style={{ width: `${progressPercent}%` }}
-              />
+
+            <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] px-4 py-4 flex min-w-0 items-center justify-between gap-3 overflow-hidden w-full">
+              <span className="font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf] whitespace-nowrap">
+                Current Score
+              </span>
+              <span className="font-syne text-2xl md:text-3xl font-extrabold text-[#a8e8ff] glow-text leading-none shrink-0 text-right tabular-nums">
+                {score}
+              </span>
             </div>
           </div>
         </div>
       )}
 
       {currentQuestion && !isFinished && (
-        <>
-          <MRITestViewer
-            key={currentQuestion.participant_id}
-            participant_id={currentQuestion.participant_id}
-          />
-
-          <div className="font-mono text-xs text-[#bbc9cf] flex gap-6">
-            <span>Score: {score}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] gap-6 lg:items-stretch">
+          <div className="min-w-0">
+            <MRITestViewer
+              key={currentQuestion.participant_id}
+              participant_id={currentQuestion.participant_id}
+            />
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {currentQuestion.answers.map((value: string) => {
-              const isCorrect = value === currentQuestion.correct;
+          <div className="min-w-0 lg:h-[70vh] lg:min-h-[560px] flex flex-col">
+            <div className="bg-[#1e2023] border border-[#3c494e] px-5 py-4 shrink-0">
+              <div className="font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf] mb-2">
+                Diagnostic Question
+              </div>
+              <div className="font-syne text-lg md:text-xl font-semibold text-[#e2e2e6] leading-snug">
+                {questionPrompt}
+              </div>
+            </div>
 
-              let base =
-                "group p-4 flex flex-col text-left transition-all border-l-2 font-syne uppercase tracking-wide";
+            <div className="flex-1 flex flex-col gap-3 pt-4">
+              <div className="grid grid-cols-1 gap-3 flex-1 content-start">
+                {currentQuestion.answers.map((value: string) => {
+                  const isCorrect = value === currentQuestion.correct;
 
-              let style =
-                "bg-[#1e2023] hover:bg-[#282a2d] border-transparent text-[#e2e2e6]";
+                  let base =
+                    "group p-4 flex flex-col text-left transition-all border-l-2 font-syne uppercase tracking-wide";
 
-              if (answered) {
-                if (value === currentQuestion.correct) {
-                  style =
-                    "bg-[#333538] border-[#a8e8ff] text-[#00d4ff] shadow-[0_0_15px_rgba(168,232,255,0.1)]";
-                } else if (value === selectedAnswer) {
-                  style =
-                    "bg-[#3a1f1f] border-[#ff6b6b] text-[#ff6b6b] shadow-[0_0_10px_rgba(255,107,107,0.2)]";
-                } else {
-                  style = "bg-[#1e2023] opacity-50 border-transparent";
-                }
-              }
+                  let style =
+                    "bg-[#1e2023] hover:bg-[#282a2d] border-transparent text-[#e2e2e6]";
 
-              return (
-                <button
-                  key={value}
-                  disabled={answered}
-                  onClick={() => handleAnswer(value, isCorrect)}
-                  className={`${base} ${style}`}
-                >
-                  <span className="font-bold text-sm">
-                    {getAnswerLabel(value)}
-                  </span>
-                </button>
-              );
-            })}
+                  if (answered) {
+                    if (value === currentQuestion.correct) {
+                      style =
+                        "bg-[#333538] border-[#a8e8ff] text-[#00d4ff] shadow-[0_0_15px_rgba(168,232,255,0.1)]";
+                    } else if (value === selectedAnswer) {
+                      style =
+                        "bg-[#3a1f1f] border-[#ff6b6b] text-[#ff6b6b] shadow-[0_0_10px_rgba(255,107,107,0.2)]";
+                    } else {
+                      style = "bg-[#1e2023] opacity-50 border-transparent";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={value}
+                      disabled={answered}
+                      onClick={() => handleAnswer(value, isCorrect)}
+                      className={`${base} ${style}`}
+                    >
+                      <span className="font-bold text-sm">
+                        {getAnswerLabel(value)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={handleNext}
+                disabled={!answered}
+                className="
+                  w-full
+                  mt-auto
+                  bg-[#a8e8ff]
+                  text-[#003642]
+                  px-10 py-4
+                  font-syne font-extrabold
+                  uppercase text-xs tracking-widest
+                  disabled:opacity-40
+                  hover:brightness-110
+                  transition-all
+                  shadow-[0_0_30px_rgba(168,232,255,0.2)]
+                "
+              >
+                {question == questionCount - 1 ? "SHOW RESULT" : "NEXT"}
+                {/* NEXT */}
+              </button>
+            </div>
           </div>
-
-          <button
-            onClick={handleNext}
-            disabled={!answered}
-            className="
-              w-full md:w-auto
-              mt-6
-              bg-[#a8e8ff]
-              text-[#003642]
-              px-10 py-4
-              font-syne font-extrabold
-              uppercase text-xs tracking-widest
-              disabled:opacity-40
-              hover:brightness-110
-              transition-all
-              shadow-[0_0_30px_rgba(168,232,255,0.2)]
-            "
-          >
-            {question == questionCount - 1 ? "SHOW RESULT" : "NEXT"}
-            {/* NEXT */}
-          </button>
-        </>
+        </div>
       )}
 
       {isFinished && (

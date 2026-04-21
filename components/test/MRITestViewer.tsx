@@ -170,9 +170,9 @@ export default function MRITestViewer({
     <div className="w-full h-[70vh] min-h-[560px] max-h-[900px] bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden p-5">
       {/* Background Glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
-      <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
-        <div className="bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[20%_80%] gap-4">
+        <div className="bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-hidden h-full">
+          <div className="flex flex-col items-stretch gap-2 mb-6">
             {[
               { key: "axial", label: "Axial" },
               { key: "coronal", label: "Coronal" },
@@ -184,22 +184,22 @@ export default function MRITestViewer({
                 onClick={() => setViewMode(item.key as ViewMode)}
                 className={
                   viewMode === item.key
-                    ? "px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs"
-                    : "px-3 py-1 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs hover:border-cyan-500/50"
+                    ? "w-full px-3 py-2 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs text-left"
+                    : "w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
                 }
               >
                 {item.label}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex flex-col gap-2">
             <label className="font-mono text-slate-300 text-xs">
               Colormap:
             </label>
             <select
               value={colormap}
               onChange={handleColormapChange}
-              className="bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
+              className="w-full bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
             >
               {colormaps.map((cm) => (
                 <option
@@ -214,7 +214,7 @@ export default function MRITestViewer({
             <button
               type="button"
               onClick={handleResetView}
-              className="ml-auto px-3 py-1 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs hover:border-cyan-500/50"
+              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
             >
               Reset view
             </button>
