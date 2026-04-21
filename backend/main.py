@@ -137,6 +137,23 @@ def get_metadata(case_id: str, filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    
+#endpoint na pocet participantov
+@app.get("/participants_count")
+def get_participants_count(db: Session = Depends(get_db)):
+    count = (
+        db.query(Participant).count()
+    )
+
+    return count
+
+# Endpoint pre ziskanie vsetkych participantov
+@app.get("/participants/all")
+def get_participants(db: Session = Depends(get_db)):
+    participants = db.query(Participant.participant_id).all()
+    
+    participant_ids = [participant.participant_id for participant in participants]
+    return participant_ids
 
 # Endpoint pre informacie o pacientovi z db
 @app.get("/participants/{participant_id}")
@@ -157,6 +174,32 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
         "gender": participant.gender,
     }
 
+@app.get("/questions/qenerate_pids")
+def get_questions(db: Session = Depends(get_db)):
+    import random
+    count = get_participants_count(db)
+    participants_ids = get_participants(db)
+
+    ids = set()
+
+    while len(ids) < 10:
+        number = random.randrange(0,count-1)
+        ids.add(participants_ids[number])
+
+    return ids
+
+@app.get("/questions/qenerate/{participant_id}")
+def get_questions(participant_id: str, db: Session = Depends(get_db)):
+    participant_data = get_participant(participant_id,db)
+
+    diagnosis = participant_data["diagnosis"]
+
+    return {
+        "nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{participant_id}_T1w.nii.gz",
+        "participant_id": participant_id,
+        "answers": ["ADHD","CONTROL","SCHZ","BIPOLAR"],
+        "correct": diagnosis
+    }
 
 def load_diagnoses() -> dict:
     if not os.path.exists(DIAGNOSES_PATH):
@@ -169,7 +212,6 @@ def load_diagnoses() -> dict:
             return {}
     except json.JSONDecodeError as exc:
         raise HTTPException(status_code=500, detail=f"Invalid diagnoses.json: {exc}")
-
 
 @app.get("/diagnoses/{diagnosis_key}")
 def get_diagnosis_info(diagnosis_key: str):
@@ -194,7 +236,6 @@ async def get_case_file(case_id: str, filename: str):
     response = FileResponse(file_path, media_type=media_type)
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
-
 
 if __name__ == "__main__":
     import uvicorn
