@@ -1,18 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Niivue } from "@niivue/niivue";
+import { Niivue, SHOW_RENDER } from "@niivue/niivue";
 
 interface MRIViewerNiiVueProps {
   participant_id: string;
 }
 
-type ViewMode = "axial" | "coronal" | "sagittal";
+type ViewMode = "axial" | "coronal" | "sagittal" | "all";
 
 export default function MRITestViewer({
   participant_id,
 }: MRIViewerNiiVueProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Niivue instance is created only once
 
@@ -20,7 +21,9 @@ export default function MRITestViewer({
 
   const [colormap, setColormap] = useState("gray");
 
-  const [viewMode, setViewMode] = useState<ViewMode>("axial");
+  const colormapRef = useRef(colormap);
+
+  const [viewMode, setViewMode] = useState<ViewMode>("all");
 
   const [renderOpacity, setRenderOpacity] = useState(1);
 
@@ -35,6 +38,8 @@ export default function MRITestViewer({
   const [clipAzimuth, setClipAzimuth] = useState(35);
 
   const [clipElevation, setClipElevation] = useState(15);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Colormaps supported by Niivue
 
@@ -53,48 +58,55 @@ export default function MRITestViewer({
 
   const url = `http://127.0.0.1:8000/files/${participant_id}/${participant_id}_T1w.nii.gz`;
 
-  // useEffect(() => {
-  //   setLoading(true);
-  //   fetch(
-  //     `http://127.0.0.1:8000/files/${participant_id}/${participant_id}_T1w.nii.gz`,
-  //   )
-  //     .then((res) => res.json())
-  //     .then((data) => {})
-  //     .catch((e) => {
-  //       setError("Failed to load cases.");
-  //       setLoading(false);
-  //     });
-  // }, []);
-
-  const applyViewMode = useCallback((mode: ViewMode) => {
-    const v = nvRef.current.volumes[0];
+  const applyViewMode = useCallback((nv: Niivue, mode: ViewMode) => {
+    const v = nv.volumes[0];
 
     if (!v) return;
 
+    const viewer = nv as any;
+
     if (mode === "axial") {
-      nvRef.current.setSliceType(nvRef.current.sliceTypeAxial);
+      nv.setSliceType(nv.sliceTypeAxial);
       return;
     }
 
     if (mode === "coronal") {
-      nvRef.current.setSliceType(nvRef.current.sliceTypeCoronal);
+      nv.setSliceType(nv.sliceTypeCoronal);
       return;
     }
 
     if (mode === "sagittal") {
-      nvRef.current.setSliceType(nvRef.current.sliceTypeSagittal);
+      nv.setSliceType(nv.sliceTypeSagittal);
       return;
     }
 
-    nvRef.current.setSliceType(nvRef.current.sliceTypeRender);
+    nv.setSliceType(nv.sliceTypeMultiplanar);
+
+    if (typeof viewer.setMultiplanarLayout === "function") {
+      viewer.setMultiplanarLayout(2);
+    }
+
+    if (typeof viewer.setMultiplanarEqualSize === "function") {
+      viewer.setMultiplanarEqualSize(true);
+    }
+
+    if (viewer.opts) {
+      viewer.opts.multiplanarShowRender = SHOW_RENDER.NEVER;
+    }
   }, []);
 
-  const applyColormap = useCallback(() => {
-    const v = nvRef.current.volumes[0];
+  const applyColormap = useCallback((nv: Niivue) => {
+    const v = nv.volumes[0];
 
     if (!v) return;
 
-    nvRef.current.setColormap(v.id, colormap);
+    nv.setColormap(v.id, colormapRef.current);
+    const viewer = nv as any;
+    if (typeof viewer.draw === "function") viewer.draw();
+  }, []);
+
+  useEffect(() => {
+    colormapRef.current = colormap;
   }, [colormap]);
 
   // 1. Effect: Initialize the canvas (once)
@@ -111,6 +123,24 @@ export default function MRITestViewer({
     };
   }, []);
 
+  // Fullscreen change handler: update state and resize viewer
+  useEffect(() => {
+    const onFsChange = () => {
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+
+      const viewer = nvRef.current as any;
+      if (typeof viewer.resizeListener === "function") {
+        viewer.resizeListener();
+      } else if (typeof viewer.resize === "function") {
+        viewer.resize();
+      }
+    };
+
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
   // 2. Effect: Load main file and overlay (only when URL changes)
 
   useEffect(() => {
@@ -120,26 +150,35 @@ export default function MRITestViewer({
 
         await nvRef.current.loadVolumes(volumes);
 
-        applyViewMode(viewMode);
-        applyColormap();
+        applyViewMode(nvRef.current, viewMode);
+        applyColormap(nvRef.current);
       } catch (e: any) {}
     };
 
     loadData();
-  }, []);
-
-  // 2b. Effect: Switch plane (axial/coronal/sagittal/3D)
-
-  useEffect(() => {
-    applyViewMode(viewMode);
-    applyColormap();
-  }, [applyViewMode, applyColormap, viewMode]);
+  }, [applyColormap, applyViewMode, url, viewMode]);
 
   // 3. Effect: Change colormap without reloading the file
 
   useEffect(() => {
-    applyColormap();
+    if (nvRef.current.volumes.length > 0) {
+      applyColormap(nvRef.current);
+    }
   }, [applyColormap]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const viewer = nvRef.current as any;
+
+      if (typeof viewer.resizeListener === "function") {
+        viewer.resizeListener();
+      } else if (typeof viewer.resize === "function") {
+        viewer.resize();
+      }
+    }, 0);
+
+    return () => window.clearTimeout(handle);
+  }, [viewMode]);
 
   // Colormap change
 
@@ -158,16 +197,27 @@ export default function MRITestViewer({
 
     if (nvRef.current.volumes.length > 0) {
       nvRef.current.setDefaults(undefined, true);
+      applyViewMode(nvRef.current, viewMode);
+      applyColormap(nvRef.current);
+      nvRef.current.setScale(1);
     }
+  };
 
-    applyViewMode(viewMode);
-    applyColormap();
-
-    nvRef.current.setScale(1);
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current?.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (e) {}
   };
 
   return (
-    <div className="w-full h-[70vh] min-h-[560px] max-h-[900px] bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden p-5">
+    <div
+      ref={containerRef}
+      className="w-full h-[70vh] min-h-[560px] max-h-[900px] bg-[#0f1117] rounded-2xl border border-cyan-500/20 shadow-2xl relative overflow-hidden p-5"
+    >
       {/* Background Glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
       <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[20%_80%] gap-4">
@@ -177,6 +227,7 @@ export default function MRITestViewer({
               { key: "axial", label: "Axial" },
               { key: "coronal", label: "Coronal" },
               { key: "sagittal", label: "Sagittal" },
+              { key: "all", label: "All" },
             ].map((item) => (
               <button
                 key={item.key}
@@ -193,6 +244,13 @@ export default function MRITestViewer({
             ))}
           </div>
           <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
+            >
+              {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            </button>
             <label className="font-mono text-slate-300 text-xs">
               Colormap:
             </label>
