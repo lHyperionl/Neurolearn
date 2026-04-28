@@ -96,10 +96,10 @@ const ChatPanel = () => {
                         </span>
                     </div>
                     <div>
-                        <h4 className="font-syne text-xs font-bold uppercase tracking-wider text-[#e2e2e6]">
-                            Study Assistant
-                        </h4>
-                        <p className="text-[9px] text-[#a8e8ff] font-mono">
+                         <h4 className="font-syne text-lg font-bold uppercase tracking-wider text-[#e2e2e6]">
+                             Study Assistant
+                         </h4>
+                         <p className="text-sm text-[#a8e8ff] font-mono">
                             NEURAL_MODEL: ON_LINE
                         </p>
                     </div>
@@ -141,26 +141,26 @@ const ChatPanel = () => {
                                         : "bg-[#00d4ff]/5 border-l-2 border-[#a8e8ff]",
                                 )}
                             >
-                                <p
-                                    className={cn(
-                                        "text-xs leading-relaxed",
-                                        msg.role === "student"
-                                            ? "text-[#e2e2e6]"
-                                            : "text-[#bbc9cf]",
-                                    )}
-                                >
+                                 <p
+                                     className={cn(
+                                         "text-lg leading-relaxed",
+                                         msg.role === "student"
+                                             ? "text-[#e2e2e6]"
+                                             : "text-[#bbc9cf]",
+                                     )}
+                                 >
                                     {msg.content}
                                 </p>
                             </div>
-                            <span
-                                suppressHydrationWarning
-                                className={cn(
-                                    "text-[9px] font-mono mt-1",
-                                    msg.role === "student"
-                                        ? "text-slate-500"
-                                        : "text-[#a8e8ff]",
-                                )}
-                            >
+                                 <span
+                                 suppressHydrationWarning
+                                 className={cn(
+                                     "text-sm font-mono mt-1",
+                                     msg.role === "student"
+                                         ? "text-slate-500"
+                                         : "text-[#a8e8ff]",
+                                 )}
+                             >
                                 {msg.role === "student"
                                     ? "STUDENT_01"
                                     : "CORE_AI"}{" "}
@@ -188,8 +188,8 @@ const ChatPanel = () => {
                                 >
                                     autorenew
                                 </span>
-                                <span className="text-xs text-[#bbc9cf] font-mono">
-                                    Processing...
+                                 <span className="text-sm text-[#bbc9cf] font-mono">
+                                     Processing...
                                 </span>
                             </div>
                         </motion.div>
