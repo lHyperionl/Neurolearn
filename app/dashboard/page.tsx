@@ -37,13 +37,13 @@ export default function DashboardPage() {
                             transition={{ duration: 0.5 }}
                             className="text-center mb-10"
                         >
-                            <div className="font-mono text-xs uppercase tracking-[0.35em] text-cyan-300/70">
+                            <div className="font-mono text-xs uppercase tracking-[0.45em] text-cyan-300/70">
                                 Neurolearn Dashboard
                             </div>
-                            <h1 className="font-syne text-3xl md:text-4xl font-extrabold text-[#e2e2e6] tracking-tight mt-3">
+                            <h1 className="font-syne text-5xl md:text-6xl font-extrabold text-[#e2e2e6] tracking-tight mt-3">
                                 Choose your next session
                             </h1>
-                            <p className="text-sm text-slate-400 mt-3 max-w-2xl mx-auto">
+                            <p className="text-xl text-slate-400 mt-4 max-w-2xl mx-auto">
                                 Jump into guided cases or test your pattern recognition skills.
                             </p>
                         </motion.div>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
                                             </div>
                                             <span className="material-symbols-outlined text-cyan-300">north_east</span>
                                         </div>
-                                        <h2 className="font-syne text-2xl font-bold text-[#e2e2e6] mt-4">
+                                        <h2 className="font-syne text-3xl font-bold text-[#e2e2e6] mt-4">
                                             {card.title}
                                         </h2>
                                         <p className="text-sm text-slate-400 mt-3">
