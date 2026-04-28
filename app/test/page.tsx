@@ -13,6 +13,15 @@ export default function TestPage() {
     ADHD: "ADHD",
   };
 
+  const diagnosisDescriptionMap: Record<string, string> = {
+    CONTROL:
+      "No significant structural abnormalities; normal symmetry and brain volume.",
+    ADHD: "Reduced volume in the prefrontal cortex and basal ganglia, sometimes with delayed cortical development.",
+    BIPOLAR:
+      "Alterations in the limbic system (e.g., amygdala, hippocampus) and prefrontal regions linked to emotion regulation.",
+    SCHZ: "Enlarged ventricles and reduced gray matter, especially in frontal and temporal lobes.",
+  };
+
   const [allCases, setAllCases] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [score, setScore] = useState(0);
@@ -99,7 +108,7 @@ export default function TestPage() {
         <div className="sticky top-0 z-40 pt-2">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] gap-6 items-stretch">
             <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] p-3">
-              <div className="flex items-center justify-between mb-2 font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf]">
+              <div className="flex items-center justify-between mb-2 font-mono text-[13px] md:text-[14px] uppercase tracking-wider text-[#bbc9cf]">
                 <span>Test Progress</span>
                 <span>
                   {completedQuestions}/{totalQuestions} ({progressPercent}%)
@@ -114,7 +123,7 @@ export default function TestPage() {
             </div>
 
             <div className="bg-[#1e2023]/90 backdrop-blur-sm border border-[#3c494e] px-4 py-4 flex min-w-0 items-center justify-between gap-3 overflow-hidden w-full">
-              <span className="font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf] whitespace-nowrap">
+              <span className="font-mono text-[13px] md:text-[14px] uppercase tracking-wider text-[#bbc9cf] whitespace-nowrap">
                 Current Score
               </span>
               <span className="font-syne text-2xl md:text-3xl font-extrabold text-[#a8e8ff] glow-text leading-none shrink-0 text-right tabular-nums">
@@ -136,7 +145,7 @@ export default function TestPage() {
 
           <div className="min-w-0 lg:h-[70vh] lg:min-h-[560px] flex flex-col">
             <div className="bg-[#1e2023] border border-[#3c494e] px-5 py-4 shrink-0">
-              <div className="font-mono text-[11px] uppercase tracking-wider text-[#bbc9cf] mb-2">
+              <div className="font-mono text-[13px] uppercase tracking-wider text-[#bbc9cf] mb-2">
                 Diagnostic Question
               </div>
               <div className="font-syne text-lg md:text-xl font-semibold text-[#e2e2e6] leading-snug">
@@ -180,6 +189,33 @@ export default function TestPage() {
                     </button>
                   );
                 })}
+                {answered && (
+                  <div className="mt-3 p-3 rounded border border-[#3c494e] bg-[#151617] text-sm text-[#e2e2e6]">
+                    {selectedAnswer === currentQuestion.correct ? (
+                      <div>
+                        <span className="font-bold text-[#a8e8ff]">
+                          Good job! Correct diagnosis is:
+                          {` ${getAnswerLabel(currentQuestion.correct)}`}
+                        </span>
+                        <div className="mt-2">
+                          {diagnosisDescriptionMap[currentQuestion.correct] ??
+                            ""}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="font-bold text-[#ff6b6b]">
+                          Wrong! Correct diagnosis is:
+                          {` ${getAnswerLabel(currentQuestion.correct)}`}
+                        </span>
+                        <div className="mt-2">
+                          {diagnosisDescriptionMap[currentQuestion.correct] ??
+                            ""}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <button
                 onClick={handleNext}
