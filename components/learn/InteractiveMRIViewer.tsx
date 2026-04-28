@@ -19,6 +19,10 @@ interface InteractiveMRIViewerProps {
 }
 
 type ViewMode = "axial" | "coronal" | "sagittal" | "render";
+type ViewerMode = ViewMode | "multiplanar";
+
+const getModeLabel = (mode: ViewerMode) =>
+    mode === "multiplanar" ? "ALL MODES" : mode.toUpperCase();
 
 const VIEW_MODES: { key: ViewMode; label: string; icon: string }[] = [
     { key: "axial", label: "Axial", icon: "view_stream" },
@@ -38,7 +42,7 @@ export default function InteractiveMRIViewer({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const nvRef = useRef<Niivue | null>(null);
-    const [viewMode, setViewMode] = useState<ViewMode>("axial");
+    const [viewMode, setViewMode] = useState<ViewerMode>("axial");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [colormap, setColormap] = useState("gray");
@@ -50,6 +54,7 @@ export default function InteractiveMRIViewer({
     const [clipAzimuth, setClipAzimuth] = useState(35);
     const [clipElevation, setClipElevation] = useState(15);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showThumbnails, setShowThumbnails] = useState(true);
     const [thumbnails, setThumbnails] = useState<
         Record<ViewMode, string | null>
     >({
@@ -121,7 +126,7 @@ export default function InteractiveMRIViewer({
         };
     }, []);
 
-    const updateViewMode = useCallback((mode: ViewMode) => {
+    const updateViewMode = useCallback((mode: ViewerMode) => {
         if (!nvRef.current) return;
 
         const nv = nvRef.current;
@@ -129,6 +134,11 @@ export default function InteractiveMRIViewer({
         else if (mode === "coronal") nv.setSliceType(nv.sliceTypeCoronal);
         else if (mode === "sagittal") nv.setSliceType(nv.sliceTypeSagittal);
         else if (mode === "render") nv.setSliceType(nv.sliceTypeRender);
+        else if (mode === "multiplanar") {
+            nv.setMultiplanarLayout(2);
+            nv.setHeroImage(0);
+            nv.setSliceType(nv.sliceTypeMultiplanar);
+        }
 
         if (typeof nv.draw === "function") {
             nv.draw();
@@ -236,9 +246,37 @@ export default function InteractiveMRIViewer({
         await containerRef.current.requestFullscreen();
     };
 
+    const handleResetView = useCallback(() => {
+        const nv = nvRef.current;
+        if (!nv) return;
+
+        const activeMode = viewMode;
+        nv.setDefaults(undefined, true);
+        applyRenderDefaults();
+        setColormap("gray");
+
+        if (nv.volumes[0]) {
+            nv.setColormap(nv.volumes[0].id, "gray");
+        }
+
+        updateViewMode(activeMode);
+
+        if (typeof nv.draw === "function") {
+            nv.draw();
+        }
+    }, [applyRenderDefaults, updateViewMode, viewMode]);
+
+    const handleShowAllModes = () => {
+        updateViewMode("multiplanar");
+    };
+
     useEffect(() => {
         const handleFullscreenChange = () => {
-            setIsFullscreen(Boolean(document.fullscreenElement));
+            const fullscreenActive = Boolean(document.fullscreenElement);
+            setIsFullscreen(fullscreenActive);
+            if (!fullscreenActive) {
+                setShowThumbnails(true);
+            }
         };
 
         document.addEventListener("fullscreenchange", handleFullscreenChange);
@@ -272,35 +310,38 @@ export default function InteractiveMRIViewer({
         >
             {/* Header / Toolbar */}
             <div className="flex items-center justify-between mb-4 border-b border-[#3c494e]/30 pb-3">
-                <h3 className="font-mono text-sm text-[#a8e8ff] tracking-tighter">
+                 <h3 className="font-mono text-lg text-[#a8e8ff] tracking-tighter">
                     [ INTERACTIVE_VIEWER_V2.0 ]
                 </h3>
-                <div className="flex gap-4">
-                    <button
-                        onClick={handleFullscreenToggle}
-                        className="p-1 hover:bg-[#333538] transition-colors text-cyan-500"
-                        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                    >
-                        <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: "18px" }}
-                        >
-                            {isFullscreen ? "close_fullscreen" : "fullscreen"}
-                        </span>
-                    </button>
-                    <select
-                        value={colormap}
-                        onChange={(e) => {
-                            setColormap(e.target.value);
-                            if (nvRef.current?.volumes[0]) {
-                                nvRef.current.setColormap(
-                                    nvRef.current.volumes[0].id,
-                                    e.target.value,
-                                );
-                            }
-                        }}
-                        className="bg-[#0d1117] border border-cyan-500/30 text-cyan-300 font-mono text-xs rounded px-2 py-1 outline-none"
-                    >
+                <div className="flex flex-wrap justify-end gap-4">
+                     <button
+                         onClick={handleFullscreenToggle}
+                         className="px-3 py-2 hover:bg-[#333538] transition-colors text-cyan-500 rounded-lg border border-[#3c494e] bg-[#0d1117]/80 flex items-center gap-2"
+                         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                     >
+                         <span
+                             className="material-symbols-outlined"
+                             style={{ fontSize: "20px" }}
+                         >
+                             {isFullscreen ? "close_fullscreen" : "fullscreen"}
+                         </span>
+                         <span className="text-xs font-mono hidden sm:inline">
+                             {isFullscreen ? "Exit" : "Fullscreen"}
+                         </span>
+                     </button>
+                     <select
+                         value={colormap}
+                         onChange={(e) => {
+                             setColormap(e.target.value);
+                             if (nvRef.current?.volumes[0]) {
+                                 nvRef.current.setColormap(
+                                     nvRef.current.volumes[0].id,
+                                     e.target.value,
+                                 );
+                             }
+                         }}
+                          className="bg-[#0d1117] border border-cyan-500/30 text-cyan-300 font-mono text-sm rounded-lg px-4 py-3 outline-none hover:border-cyan-500/60 transition-colors min-w-[140px]"
+                     >
                         {["gray", "hot", "jet", "viridis", "magma"].map(
                             (cm) => (
                                 <option key={cm} value={cm}>
@@ -309,81 +350,117 @@ export default function InteractiveMRIViewer({
                             ),
                         )}
                     </select>
-                    <button
-                        onClick={async () => {
-                            if (!nvRef.current) return;
-                            const nv = nvRef.current;
-                            const originalMode = viewMode;
-                            const thumbs: any = {};
+                     <button
+                         onClick={async () => {
+                             if (!nvRef.current) return;
+                             const nv = nvRef.current;
+                             const originalMode = viewMode;
+                             const thumbs: any = {};
 
-                            const modes: { key: ViewMode; val: number }[] = [
-                                { key: "axial", val: nv.sliceTypeAxial },
-                                { key: "coronal", val: nv.sliceTypeCoronal },
-                                { key: "sagittal", val: nv.sliceTypeSagittal },
-                                { key: "render", val: nv.sliceTypeRender },
-                            ];
+                             const modes: { key: ViewMode; val: number }[] = [
+                                 { key: "axial", val: nv.sliceTypeAxial },
+                                 { key: "coronal", val: nv.sliceTypeCoronal },
+                                 { key: "sagittal", val: nv.sliceTypeSagittal },
+                                 { key: "render", val: nv.sliceTypeRender },
+                             ];
 
-                            for (const m of modes) {
-                                nv.setSliceType(m.val);
-                                if (typeof nv.draw === "function") nv.draw();
-                                thumbs[m.key] = nv.canvas?.toDataURL();
-                            }
+                              for (const m of modes) {
+                                  nv.setSliceType(m.val);
+                                  if (typeof nv.draw === "function") nv.draw();
+                                  thumbs[m.key] = nv.canvas?.toDataURL();
+                              }
 
-                            setThumbnails(thumbs);
-                            updateViewMode(originalMode);
-                        }}
-                        className="p-1 hover:bg-[#333538] transition-colors text-cyan-500"
-                        title="Refresh Thumbnails"
-                    >
-                        <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: "18px" }}
-                        >
-                            refresh
-                        </span>
-                    </button>
-                    <button
-                        onClick={() =>
-                            nvRef.current?.setDefaults(undefined, true)
-                        }
-                        className="p-1 hover:bg-[#333538] transition-colors text-[#bbc9cf]"
-                        title="Reset View"
-                    >
-                        <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: "18px" }}
-                        >
-                            restart_alt
-                        </span>
-                    </button>
+                              setThumbnails(thumbs);
+                              updateViewMode(originalMode);
+                         }}
+                         className="px-3 py-2 hover:bg-[#333538] transition-colors text-cyan-400 rounded-lg border border-[#3c494e] bg-[#0d1117]/80 flex items-center gap-2"
+                         title="Refresh Thumbnails"
+                     >
+                         <span
+                             className="material-symbols-outlined"
+                             style={{ fontSize: "20px" }}
+                         >
+                             refresh
+                         </span>
+                         <span className="text-xs font-mono hidden sm:inline">
+                             Refresh
+                         </span>
+                     </button>
+                     <button
+                         onClick={handleResetView}
+                         className="px-3 py-2 hover:bg-[#333538] transition-colors text-[#bbc9cf] rounded-lg border border-[#3c494e] bg-[#0d1117]/80 flex items-center gap-2"
+                         title="Reset View"
+                     >
+                         <span
+                             className="material-symbols-outlined"
+                             style={{ fontSize: "20px" }}
+                         >
+                             restart_alt
+                         </span>
+                         <span className="text-xs font-mono hidden sm:inline">
+                             Reset
+                         </span>
+                     </button>
+                     <button
+                         onClick={handleShowAllModes}
+                         className="px-3 py-2 hover:bg-[#333538] transition-colors text-amber-300 rounded-lg border border-[#3c494e] bg-[#0d1117]/80 flex items-center gap-2"
+                         title="Show All Modes"
+                     >
+                         <span
+                             className="material-symbols-outlined"
+                             style={{ fontSize: "20px" }}
+                         >
+                             grid_view
+                         </span>
+                         <span className="text-xs font-mono hidden sm:inline">
+                             Show All Modes
+                         </span>
+                     </button>
+                     {isFullscreen && (
+                         <button
+                             onClick={() => setShowThumbnails((visible) => !visible)}
+                             className="px-3 py-2 hover:bg-[#333538] transition-colors text-slate-300 rounded-lg border border-[#3c494e] bg-[#0d1117]/80 flex items-center gap-2"
+                             title={showThumbnails ? "Hide Thumbnails" : "Show Thumbnails"}
+                         >
+                             <span
+                                 className="material-symbols-outlined"
+                                 style={{ fontSize: "20px" }}
+                             >
+                                 {showThumbnails ? "visibility_off" : "visibility"}
+                             </span>
+                             <span className="text-xs font-mono hidden sm:inline">
+                                 {showThumbnails ? "Hide Thumbnails" : "Show Thumbnails"}
+                             </span>
+                         </button>
+                     )}
                 </div>
             </div>
 
             {(patientLoading || patientError || patientInfo) && (
                 <div className="mb-4 rounded-lg border border-cyan-500/10 bg-[#0f1117] p-3">
-                    <div className="font-mono text-xs text-slate-300 mb-2">Patient</div>
-                    {patientLoading && (
-                        <div className="text-cyan-400 font-mono text-xs">Loading...</div>
-                    )}
-                    {patientError && (
-                        <div className="text-red-400 font-mono text-xs">{patientError}</div>
-                    )}
-                    {patientInfo && !patientLoading && !patientError && (
-                        <div className="space-y-1">
-                            <div className="text-slate-300 font-mono text-xs">
-                                ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
-                            </div>
-                            <div className="text-slate-300 font-mono text-xs">
-                                Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
-                            </div>
-                            <div className="text-slate-300 font-mono text-xs">
-                                Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
-                            </div>
-                            <div className="text-slate-300 font-mono text-xs">
-                                Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
-                            </div>
-                        </div>
-                    )}
+                     <div className="font-mono text-sm text-slate-300 mb-2">Patient</div>
+                     {patientLoading && (
+                         <div className="text-cyan-400 font-mono text-sm">Loading...</div>
+                     )}
+                     {patientError && (
+                         <div className="text-red-400 font-mono text-sm">{patientError}</div>
+                     )}
+                     {patientInfo && !patientLoading && !patientError && (
+                         <div className="space-y-1">
+                             <div className="text-slate-300 font-mono text-sm">
+                                 ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
+                             </div>
+                             <div className="text-slate-300 font-mono text-sm">
+                                 Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
+                             </div>
+                             <div className="text-slate-300 font-mono text-sm">
+                                 Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
+                             </div>
+                             <div className="text-slate-300 font-mono text-sm">
+                                 Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
+                             </div>
+                         </div>
+                     )}
                 </div>
             )}
 
@@ -394,40 +471,41 @@ export default function InteractiveMRIViewer({
                     className="w-full h-full"
                 />
 
-                {loading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10 text-cyan-400 font-mono text-sm">
-                        INITIALIZING NEURAL SCAN...
-                    </div>
-                )}
-
-                {error && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10 text-red-500 font-mono text-sm p-4 text-center">
-                        {error}
-                    </div>
-                )}
+                 {loading && (
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10 text-cyan-400 font-mono text-lg">
+                         INITIALIZING NEURAL SCAN...
+                     </div>
+                 )}
+ 
+                 {error && (
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10 text-red-500 font-mono text-lg p-4 text-center">
+                         {error}
+                     </div>
+                 )}
 
                 <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 border border-[#a8e8ff]/40 z-10">
-                    <span className="font-mono text-[10px] text-[#a8e8ff]">
-                        MODE: {viewMode.toUpperCase()}
+                    <span className="font-mono text-base text-[#a8e8ff]">
+                        MODE: {getModeLabel(viewMode)}
                     </span>
                 </div>
             </div>
 
             {/* Thumbnail Controls */}
-            <div className="grid grid-cols-4 gap-3 mt-4">
-                {VIEW_MODES.map((mode) => {
-                    const isActive = viewMode === mode.key;
-                    return (
-                        <button
-                            key={mode.key}
-                            onClick={() => updateViewMode(mode.key)}
-                            className={cn(
-                                "relative aspect-video bg-[#0d1117] border flex flex-col items-center justify-center transition-all group overflow-hidden",
-                                isActive
-                                    ? "border-[#a8e8ff] shadow-[0_0_15px_rgba(0,212,255,0.3)] ring-1 ring-[#a8e8ff]/50"
-                                    : "border-[#3c494e] hover:border-[#a8e8ff]/40",
-                            )}
-                        >
+            {showThumbnails && (
+                <div className="grid grid-cols-4 gap-3 mt-4">
+                    {VIEW_MODES.map((mode) => {
+                        const showActive = viewMode === mode.key;
+                        return (
+                            <button
+                                key={mode.key}
+                                onClick={() => updateViewMode(mode.key)}
+                                className={cn(
+                                    "relative aspect-video bg-[#0d1117] border flex flex-col items-center justify-center transition-all group overflow-hidden",
+                                    showActive
+                                        ? "border-[#a8e8ff] shadow-[0_0_15px_rgba(0,212,255,0.3)] ring-1 ring-[#a8e8ff]/50"
+                                        : "border-[#3c494e] hover:border-[#a8e8ff]/40",
+                                )}
+                            >
                             {/* Preview Image / Icon Container */}
                             <div className="flex-1 w-full relative flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-colors">
                                 {thumbnails[mode.key] ? (
@@ -440,7 +518,7 @@ export default function InteractiveMRIViewer({
                                     <span
                                         className={cn(
                                             "material-symbols-outlined transition-all duration-300",
-                                            isActive
+                                            showActive
                                                 ? "text-[#a8e8ff] scale-110"
                                                 : "text-[#5c696e] group-hover:text-[#a8e8ff]/60",
                                         )}
@@ -468,34 +546,34 @@ export default function InteractiveMRIViewer({
                                         <div className="absolute inset-6 border-2 border-cyan-500/40 rounded-full animate-pulse shadow-[0_0_10px_rgba(0,255,255,0.3)]" />
                                     )}
                                 </div>
-                            </div>
+                             </div>
 
-                            {/* Label Bar */}
-                            <div
-                                className={cn(
-                                    "w-full py-1 text-[9px] font-mono font-bold tracking-[0.2em] text-center border-t transition-colors",
-                                    isActive
-                                        ? "bg-[#a8e8ff]/10 text-[#a8e8ff] border-[#a8e8ff]/30"
-                                        : "bg-black/40 text-[#5c696e] border-transparent group-hover:text-[#bbc9cf]",
-                                )}
-                            >
-                                {mode.label.toUpperCase()}
-                            </div>
+                             {/* Label Bar */}
+                             <div className={cn(
+                                 "w-full py-2 text-[14px] font-mono font-bold tracking-[0.2em] text-center border-t transition-colors",
+                                  showActive
+                                      ? "bg-[#a8e8ff]/10 text-[#a8e8ff] border-[#a8e8ff]/30"
+                                      : "bg-black/40 text-[#5c696e] border-transparent group-hover:text-[#bbc9cf]",
+                             )}
+                             >
+                                 {mode.label.toUpperCase()}
+                             </div>
 
-                            {/* Scanline effect for active thumbnail */}
-                            {isActive && (
-                                <div className="absolute inset-0 neural-scanline pointer-events-none opacity-20" />
-                            )}
+                             {/* Scanline effect for active thumbnail */}
+                             {showActive && (
+                                 <div className="absolute inset-0 neural-scanline pointer-events-none opacity-20" />
+                             )}
 
-                            {/* Decorative corners */}
-                            <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-[#3c494e]" />
-                            <div className="absolute top-0 right-0 w-1 h-1 border-t border-r border-[#3c494e]" />
-                            <div className="absolute bottom-0 left-0 w-1 h-1 border-b border-l border-[#3c494e]" />
-                            <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-[#3c494e]" />
-                        </button>
-                    );
-                })}
-            </div>
+                             {/* Decorative corners */}
+                             <div className="absolute top-0 left-0 w-1 h-1 border-t border-l border-[#3c494e]" />
+                             <div className="absolute top-0 right-0 w-1 h-1 border-t border-r border-[#3c494e]" />
+                             <div className="absolute bottom-0 left-0 w-1 h-1 border-b border-l border-[#3c494e]" />
+                             <div className="absolute bottom-0 right-0 w-1 h-1 border-b border-r border-[#3c494e]" />
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }

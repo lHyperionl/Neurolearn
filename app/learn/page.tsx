@@ -52,19 +52,19 @@ export default function LearnCasesPage() {
                             <div className="font-mono text-xs uppercase tracking-[0.45em] text-cyan-300/70">
                                 Neurolearn Learn Lab
                             </div>
-                            <h1 className="font-syne text-3xl md:text-4xl font-extrabold text-[#e2e2e6] tracking-tight mt-3">
-                                Select a case to dissect
-                            </h1>
-                            <p className="text-sm text-slate-400 mt-3 max-w-2xl">
-                                Each case includes MRI sequences, and diagnostic context.
-                            </p>
+                             <h1 className="font-syne text-5xl md:text-6xl font-extrabold text-[#e2e2e6] tracking-tight mt-3">
+                                 Select a case to dissect
+                             </h1>
+                             <p className="text-xl text-slate-400 mt-4 max-w-2xl">
+                                 Each case includes MRI sequences, and diagnostic context.
+                             </p>
                         </div>
                         <div className="grid grid-cols-1 gap-3">
                             <div className="border border-[#3c494e] bg-[#14171c]/90 px-4 py-3">
-                                <div className="text-[9px] uppercase tracking-[0.35em] text-slate-500">
-                                    Total Cases
-                                </div>
-                                <div className="text-2xl font-syne text-[#e2e2e6] mt-2">
+                                 <div className="text-[11px] uppercase tracking-[0.35em] text-slate-500">
+                                     Total Cases
+                                 </div>
+                                 <div className="text-4xl font-syne text-[#e2e2e6] mt-2">
                                     {cases.length || "--"}
                                 </div>
                             </div>
@@ -73,20 +73,20 @@ export default function LearnCasesPage() {
 
                     <div className="mt-8 border border-[#3c494e] bg-[#14171c]/80">
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c494e]">
-                            <h2 className="font-mono text-xs uppercase tracking-widest text-[#a8e8ff]">
-                                Case Index
-                            </h2>
-                            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-slate-500">
-                                {cases.length} entries
-                            </div>
-                        </div>
-                        <div className="p-4">
-                            {loading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading cases...</div>
-                            )}
-                            {error && (
-                                <div className="text-xs font-mono text-red-400">{error}</div>
-                            )}
+                             <h2 className="font-mono text-sm uppercase tracking-widest text-[#a8e8ff]">
+                                 Case Index
+                             </h2>
+                             <div className="text-sm font-mono uppercase tracking-[0.3em] text-slate-500">
+                                 {cases.length} entries
+                             </div>
+                         </div>
+                         <div className="p-4">
+                             {loading && (
+                                 <div className="text-lg font-mono text-cyan-400">Loading cases...</div>
+                             )}
+                             {error && (
+                                 <div className="text-lg font-mono text-red-400">{error}</div>
+                             )}
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {cases.map((caseId, index) => (
                                     <Link
@@ -97,13 +97,13 @@ export default function LearnCasesPage() {
                                         <div className="absolute right-4 top-4 text-[10px] font-mono text-slate-500">
                                             {String(index + 1).padStart(2, "0")}
                                         </div>
-                                        <div className="text-[9px] uppercase tracking-[0.35em] text-slate-500">
-                                            Case
-                                        </div>
-                                        <div className="text-base font-syne text-[#e2e2e6] mt-2 group-hover:text-cyan-200">
-                                            {caseId}
-                                        </div>
-                                        <div className="mt-4 flex items-center gap-2 text-[10px] font-mono uppercase text-cyan-300">
+                                 <div className="text-[11px] uppercase tracking-[0.35em] text-slate-500">
+                                     Case
+                                 </div>
+                                 <div className="text-2xl font-syne text-[#e2e2e6] mt-2 group-hover:text-cyan-200">
+                                              {caseId}
+                                          </div>
+                                         <div className="mt-4 flex items-center gap-2 text-sm font-mono uppercase text-cyan-300">
                                             Open case
                                             <span className="material-symbols-outlined text-sm">arrow_forward</span>
                                         </div>

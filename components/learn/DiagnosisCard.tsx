@@ -46,11 +46,11 @@ const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
                 ))}
             </div>
 
-            <h1 className="font-syne text-2xl font-extrabold text-[#e2e2e6] tracking-tighter mb-4 pr-36 leading-none uppercase">
+            <h1 className="font-syne text-4xl font-extrabold text-[#e2e2e6] tracking-tighter mb-4 pr-36 leading-none uppercase">
                 {name}
             </h1>
 
-            <p className="text-sm text-[#bbc9cf] mb-6 leading-relaxed">
+            <p className="text-lg text-[#bbc9cf] mb-6 leading-relaxed">
                 {description}
             </p>
 
@@ -59,7 +59,7 @@ const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
                     onClick={() => setFeaturesOpen(!featuresOpen)}
                     className="flex items-center justify-between w-full border-b border-[#3c494e]/30 pb-2 mb-3 text-[#a8e8ff] hover:text-[#00d4ff] transition-colors"
                 >
-                    <span className="font-mono text-xs uppercase tracking-widest">Case Metadata</span>
+                    <span className="font-mono text-base uppercase tracking-widest">Case Metadata</span>
                     <span
                         className="material-symbols-outlined transition-transform duration-200"
                         style={{
@@ -81,14 +81,14 @@ const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
                             className="space-y-2 overflow-hidden"
                         >
                             {keyFeatures.map((feature, index) => (
-                                <motion.li
-                                    key={index}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.07 }}
-                                    className="flex items-start gap-3 text-sm text-[#bbc9cf]"
-                                >
-                                    <span className="text-[#a8e8ff] mt-0.5 text-[10px] shrink-0">
+                                 <motion.li
+                                     key={index}
+                                     initial={{ opacity: 0, x: -10 }}
+                                     animate={{ opacity: 1, x: 0 }}
+                                     transition={{ delay: index * 0.07 }}
+                                     className="flex items-start gap-3 text-lg text-[#bbc9cf]"
+                                 >
+                                    <span className="text-[#a8e8ff] mt-0.5 text-base shrink-0">
                                         ▶
                                     </span>
                                     <span>{feature}</span>
@@ -103,7 +103,7 @@ const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
                 {differentials.map((diff) => (
                     <span
                         key={diff}
-                        className="px-3 py-1 bg-[#333538] text-[10px] text-slate-400 font-mono"
+                        className="px-3 py-1 bg-[#333538] text-sm text-slate-400 font-mono"
                     >
                         ID: {diff}
                     </span>

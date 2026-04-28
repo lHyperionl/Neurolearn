@@ -228,68 +228,68 @@ export default function LearnCasePage() {
                     >
                         <div className="bg-[#1e2023] border border-[#3c494e] p-4">
                             <div className="flex items-center justify-between mb-3">
-                                <h2 className="font-mono text-xs uppercase tracking-widest text-[#a8e8ff]">
+                                <h2 className="font-mono text-lg uppercase tracking-widest text-[#a8e8ff]">
                                     Case {selectedCase}
                                 </h2>
                                 <div className="flex items-center gap-2">
-                                    <Link
-                                        href="/learn"
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
-                                    >
+                                     <Link
+                                         href="/learn"
+                                         className="px-4 py-2 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                     >
                                         Back
                                     </Link>
-                                    <button
-                                        type="button"
-                                        onClick={handlePreviousCase}
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
-                                    >
+                                     <button
+                                         type="button"
+                                         onClick={handlePreviousCase}
+                                         className="px-4 py-2 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                     >
                                         Previous case
                                     </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleNextCase}
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
-                                    >
+                                     <button
+                                         type="button"
+                                         onClick={handleNextCase}
+                                         className="px-4 py-2 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                     >
                                         Next case
                                     </button>
                                 </div>
                             </div>
                             {caseListLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading cases...</div>
+                                <div className="text-lg font-mono text-cyan-400">Loading cases...</div>
                             )}
                             {caseListError && (
-                                <div className="text-xs font-mono text-red-400">{caseListError}</div>
+                                <div className="text-lg font-mono text-red-400">{caseListError}</div>
                             )}
                             {caseLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading case data...</div>
+                                <div className="text-lg font-mono text-cyan-400">Loading case data...</div>
                             )}
                             {caseError && (
-                                <div className="text-xs font-mono text-red-400">{caseError}</div>
+                                <div className="text-lg font-mono text-red-400">{caseError}</div>
                             )}
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Case ID</div>
-                                <div className="text-xs font-mono text-slate-200">
+                                <div className="text-base font-mono text-slate-500 uppercase">Case ID</div>
+                                <div className="text-base font-mono text-slate-200">
                                     {selectedCase}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Sequence</div>
-                                <div className="text-xs font-mono text-slate-200">
+                                <div className="text-base font-mono text-slate-500 uppercase">Sequence</div>
+                                <div className="text-base font-mono text-slate-200">
                                     {sequenceLabel}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">View</div>
-                                <div className="text-xs font-mono text-slate-200">
+                                <div className="text-base font-mono text-slate-500 uppercase">View</div>
+                                <div className="text-base font-mono text-slate-200">
                                     {viewLabel}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Mask</div>
-                                <div className="text-xs font-mono text-slate-200">
+                                <div className="text-base font-mono text-slate-500 uppercase">Mask</div>
+                                <div className="text-base font-mono text-slate-200">
                                     {hasOverlay ? "Available" : "None"}
                                 </div>
                             </div>
@@ -319,12 +319,12 @@ export default function LearnCasePage() {
                                     className="h-full"
                                 />
                                 {hasOverlay && (
-                                    <button
-                                        className={
-                                            showOverlay
-                                                ? "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
-                                                : "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
-                                        }
+                                <button
+                                    className={
+                                        showOverlay
+                                            ? "px-4 py-2 rounded-md font-mono border transition-colors text-sm bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
+                                            : "px-4 py-2 rounded-md font-mono border transition-colors text-sm bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                                    }
                                         onClick={() => setShowOverlay((value) => !value)}
                                     >
                                         {showOverlay ? "Hide segmentation" : "Show segmentation"}
@@ -337,8 +337,8 @@ export default function LearnCasePage() {
                                                 key={file}
                                                 className={
                                                     selectedFile === file
-                                                        ? "px-3 py-1 rounded-md font-mono border transition-colors text-[10px] bg-cyan-500 text-white border-cyan-500"
-                                                        : "px-3 py-1 rounded-md font-mono border transition-colors text-[10px] bg-[#181b22] text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10"
+                                                        ? "px-4 py-2 rounded-md font-mono border transition-colors text-sm bg-cyan-500 text-white border-cyan-500"
+                                                        : "px-4 py-2 rounded-md font-mono border transition-colors text-sm bg-[#181b22] text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10"
                                                 }
                                                 onClick={() => setSelectedFile(file)}
                                             >
@@ -359,28 +359,28 @@ export default function LearnCasePage() {
                     >
                         <div className="flex flex-col gap-3">
                             <div className="flex items-center justify-between">
-                                <h3 className="font-mono text-xs uppercase tracking-widest text-[#a8e8ff]">
+                                <h3 className="font-mono text-lg uppercase tracking-widest text-[#a8e8ff]">
                                     Diagnosis
                                 </h3>
                                 <button
                                     type="button"
                                     onClick={() => setShowDiagnosis((value) => !value)}
-                                    className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                    className="px-4 py-2 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
                                 >
                                     {showDiagnosis ? "Hide" : "Show"}
                                 </button>
                             </div>
                             {diagnosisLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading diagnosis...</div>
+                                <div className="text-lg font-mono text-cyan-400">Loading diagnosis...</div>
                             )}
                             {diagnosisError && (
-                                <div className="text-xs font-mono text-red-400">{diagnosisError}</div>
+                                <div className="text-lg font-mono text-red-400">{diagnosisError}</div>
                             )}
                             {showDiagnosis && diagnosisInfo && (
                                 <DiagnosisCard diagnosis={diagnosisInfo} />
                             )}
                             {!showDiagnosis && (
-                                <div className="bg-[#1e2023] border border-[#3c494e] p-4 text-xs text-slate-400 font-mono">
+                                <div className="bg-[#1e2023] border border-[#3c494e] p-4 text-lg text-slate-400 font-mono">
                                     Diagnosis is hidden. Use the toggle to reveal details.
                                 </div>
                             )}
