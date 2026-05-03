@@ -13,15 +13,6 @@ export default function TestPage() {
     ADHD: "ADHD",
   };
 
-  const diagnosisDescriptionMap: Record<string, string> = {
-    CONTROL:
-      "No significant structural abnormalities; normal symmetry and brain volume.",
-    ADHD: "Reduced volume in the prefrontal cortex and basal ganglia, sometimes with delayed cortical development.",
-    BIPOLAR:
-      "Alterations in the limbic system (e.g., amygdala, hippocampus) and prefrontal regions linked to emotion regulation.",
-    SCHZ: "Enlarged ventricles and reduced gray matter, especially in frontal and temporal lobes.",
-  };
-
   const [allCases, setAllCases] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [score, setScore] = useState(0);
@@ -44,7 +35,7 @@ export default function TestPage() {
   );
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/questions/qenerate_pids")
+    fetch("http://127.0.0.1:8000/questions/generate_pids")
       .then((res) => res.json())
       .then((data) => setAllCases(data))
       .catch((err) => console.error(err));
@@ -56,7 +47,7 @@ export default function TestPage() {
 
       try {
         const res = await fetch(
-          `http://127.0.0.1:8000/questions/qenerate/${allCases[question]}`,
+          `http://127.0.0.1:8000/questions/generate/${allCases[question]}`,
         );
         const data = await res.json();
         setCurrentQuestion(data);
@@ -198,7 +189,7 @@ export default function TestPage() {
                           {` ${getAnswerLabel(currentQuestion.correct)}`}
                         </span>
                         <div className="mt-2">
-                          {diagnosisDescriptionMap[currentQuestion.correct] ??
+                          {currentQuestion.signature ??
                             ""}
                         </div>
                       </div>
@@ -209,7 +200,7 @@ export default function TestPage() {
                           {` ${getAnswerLabel(currentQuestion.correct)}`}
                         </span>
                         <div className="mt-2">
-                          {diagnosisDescriptionMap[currentQuestion.correct] ??
+                          {currentQuestion.signature ??
                             ""}
                         </div>
                       </div>

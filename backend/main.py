@@ -9,6 +9,11 @@ import mimetypes
 import logging
 import json
 
+try:
+    from .models import Diagnosis
+except ImportError:
+    from models import Diagnosis
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -164,17 +169,39 @@ def get_participant(participant_id: str, db: Session = Depends(get_db)):
         .first()
     )
 
+    diagnosis = get_diagnosis(participant.diagnosis_id,db)
+
     if participant is None:
         raise HTTPException(status_code=404, detail="Participant not found")
 
     return {
         "participant_id": participant.participant_id,
-        "diagnosis": participant.diagnosis,
+        "diagnosis": diagnosis["code"],
         "age": participant.age,
         "gender": participant.gender,
+        "diagnosis_signature": diagnosis["signature"],
+        "diagnosis_name": diagnosis["name"],
     }
 
-@app.get("/questions/qenerate_pids")
+# Endpoint pre informacie o diagnoze
+@app.get("/diagnosis_info/{diagnosis_id}")
+def get_diagnosis(diagnosis_id: int, db: Session = Depends(get_db)):
+    diagnosis = (
+        db.query(Diagnosis)
+        .filter(Diagnosis.diagnosis_id == diagnosis_id)
+        .first()
+    )
+
+    if diagnosis is None:
+        raise HTTPException(status_code=404, detail="Diagnosis not found")
+
+    return {
+        "code": diagnosis.code,
+        "name": diagnosis.name,
+        "signature": diagnosis.signature
+    }
+
+@app.get("/questions/generate_pids")
 def get_questions(db: Session = Depends(get_db)):
     import random
     count = get_participants_count(db)
@@ -188,17 +215,16 @@ def get_questions(db: Session = Depends(get_db)):
 
     return ids
 
-@app.get("/questions/qenerate/{participant_id}")
+@app.get("/questions/generate/{participant_id}")
 def get_questions(participant_id: str, db: Session = Depends(get_db)):
     participant_data = get_participant(participant_id,db)
-
-    diagnosis = participant_data["diagnosis"]
 
     return {
         "nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{participant_id}_T1w.nii.gz",
         "participant_id": participant_id,
         "answers": ["ADHD","CONTROL","SCHZ","BIPOLAR"],
-        "correct": diagnosis
+        "correct": participant_data["diagnosis"],
+        "signature": participant_data["diagnosis_signature"],
     }
 
 def load_diagnoses() -> dict:
