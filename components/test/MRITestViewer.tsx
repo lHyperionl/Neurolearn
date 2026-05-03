@@ -20,7 +20,6 @@ export default function MRITestViewer({
   const nvRef = useRef<Niivue>(new Niivue());
 
   const [colormap, setColormap] = useState("gray");
-
   const colormapRef = useRef(colormap);
 
   const [viewMode, setViewMode] = useState<ViewMode>("all");
@@ -141,6 +140,25 @@ export default function MRITestViewer({
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
+  // Window resize: ensure viewer resizes and colormap is reapplied
+  useEffect(() => {
+    const onResize = () => {
+      const viewer = nvRef.current as any;
+      if (typeof viewer.resizeListener === "function") {
+        viewer.resizeListener();
+      } else if (typeof viewer.resize === "function") {
+        viewer.resize();
+      }
+
+      if (nvRef.current.volumes.length > 0) {
+        applyColormap(nvRef.current);
+      }
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [applyColormap]);
+
   // 2. Effect: Load main file and overlay (only when URL changes)
 
   useEffect(() => {
@@ -164,7 +182,7 @@ export default function MRITestViewer({
     if (nvRef.current.volumes.length > 0) {
       applyColormap(nvRef.current);
     }
-  }, [applyColormap]);
+  }, [applyColormap, colormap]);
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
@@ -183,7 +201,17 @@ export default function MRITestViewer({
   // Colormap change
 
   const handleColormapChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setColormap(e.target.value);
+    const newMap = e.target.value;
+    setColormap(newMap);
+
+    // Apply immediately to the loaded volume so the UI updates without reload
+    if (nvRef.current.volumes.length > 0) {
+      try {
+        nvRef.current.setColormap(nvRef.current.volumes[0].id, newMap);
+        const viewer = nvRef.current as any;
+        if (typeof viewer.draw === "function") viewer.draw();
+      } catch (err) {}
+    }
   };
 
   const handleResetView = () => {
@@ -221,7 +249,7 @@ export default function MRITestViewer({
       {/* Background Glow */}
       <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
       <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[20%_80%] gap-4">
-        <div className="bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-hidden h-full">
+        <div className="bg-[#0d1015] rounded-xl border border-cyan-500/10 p-4 flex flex-col overflow-auto lg:h-full h-auto min-h-0">
           <div className="flex flex-col items-stretch gap-2 mb-6">
             {[
               { key: "axial", label: "Axial" },
@@ -235,8 +263,8 @@ export default function MRITestViewer({
                 onClick={() => setViewMode(item.key as ViewMode)}
                 className={
                   viewMode === item.key
-                    ? "w-full px-3 py-2 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs text-left"
-                    : "w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
+                    ? "w-full px-3 py-2 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs text-left whitespace-normal break-words overflow-hidden"
+                    : "w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50 whitespace-normal break-words overflow-hidden"
                 }
               >
                 {item.label}
@@ -247,7 +275,7 @@ export default function MRITestViewer({
             <button
               type="button"
               onClick={toggleFullscreen}
-              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
+              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50 whitespace-normal break-words overflow-hidden"
             >
               {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
             </button>
@@ -257,7 +285,7 @@ export default function MRITestViewer({
             <select
               value={colormap}
               onChange={handleColormapChange}
-              className="w-full bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
+              className="w-full bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors whitespace-normal break-words overflow-hidden"
             >
               {colormaps.map((cm) => (
                 <option
@@ -272,13 +300,13 @@ export default function MRITestViewer({
             <button
               type="button"
               onClick={handleResetView}
-              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50"
+              className="w-full px-3 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs text-left hover:border-cyan-500/50 whitespace-normal break-words overflow-hidden"
             >
               Reset view
             </button>
           </div>
         </div>
-        <div className="bg-black/40 rounded-xl border border-cyan-500/10 p-3 flex flex-col relative">
+        <div className="bg-black/40 rounded-xl border border-cyan-500/10 p-3 flex flex-col relative min-h-0">
           <canvas
             ref={canvasRef}
             className="w-full flex-1 rounded-xl bg-black border border-cyan-500/10 shadow-inner"
