@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import InteractiveMRIViewer from "@/components/learn/InteractiveMRIViewer";
 import DiagnosisCard, { DiagnosisInfo } from "@/components/learn/DiagnosisCard";
@@ -42,6 +42,8 @@ const getSequenceLabel = (fileName?: string | null) => {
 export default function LearnCasePage() {
     const params = useParams<{ caseId: string }>();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const activeCategory = searchParams.get("category") || "ALL";
     const selectedCase = Array.isArray(params.caseId) ? params.caseId[0] : params.caseId;
 
     const [cases, setCases] = useState<string[]>([]);
@@ -66,23 +68,19 @@ export default function LearnCasePage() {
 
     useEffect(() => {
         setCaseListLoading(true);
-        fetch(`${API_URL}/cases`)
+        fetch(`${API_URL}/cases/grouped`)
             .then((res) => res.json())
             .then((data) => {
-                if (Array.isArray(data)) {
-                    setCases(data);
-                } else if (data && Array.isArray(data.cases)) {
-                    setCases(data.cases);
-                } else {
-                    setCases([]);
-                }
+                // Použijeme zoznam podľa kategórie, alebo ALL ako fallback
+                const list = data[activeCategory] || data["ALL"] || [];
+                setCases(list);
                 setCaseListLoading(false);
             })
             .catch(() => {
                 setCaseListError("Failed to load cases.");
                 setCaseListLoading(false);
             });
-    }, []);
+    }, [activeCategory]);
 
     useEffect(() => {
         if (!selectedCase) return;
@@ -179,15 +177,23 @@ export default function LearnCasePage() {
     const handleNextCase = () => {
         if (!cases.length || !selectedCase) return;
         const currentIndex = cases.indexOf(selectedCase);
-        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % cases.length : 0;
-        router.push(`/learn/${cases[nextIndex]}`);
+        if (currentIndex !== -1 && currentIndex < cases.length - 1) {
+            router.push(`/learn/${cases[currentIndex + 1]}?category=${activeCategory}`);
+        } else if (currentIndex === cases.length - 1) {
+            // Ak sme na konci, vrátime sa na začiatok kategórie
+            router.push(`/learn/${cases[0]}?category=${activeCategory}`);
+        }
     };
 
     const handlePreviousCase = () => {
         if (!cases.length || !selectedCase) return;
         const currentIndex = cases.indexOf(selectedCase);
-        const previousIndex = currentIndex > 0 ? currentIndex - 1 : cases.length - 1;
-        router.push(`/learn/${cases[previousIndex]}`);
+        if (currentIndex > 0) {
+            router.push(`/learn/${cases[currentIndex - 1]}?category=${activeCategory}`);
+        } else if (currentIndex === 0) {
+            // Ak sme na začiatku, skočíme na koniec kategórie
+            router.push(`/learn/${cases[cases.length - 1]}?category=${activeCategory}`);
+        }
     };
 
     if (!selectedCase) {

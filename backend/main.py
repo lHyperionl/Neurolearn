@@ -95,6 +95,32 @@ def list_cases():
         return {"cases": []}
 
 
+# Endpoint na získanie prípadov zoskupených podľa diagnózy z DB
+@app.get("/cases/grouped")
+def list_cases_grouped(db: Session = Depends(get_db)):
+    try:
+        # Získame všetkých participantov a ich diagnózy
+        participants = db.query(Participant).all()
+        
+        # Inicializujeme s kategóriou ALL
+        grouped = {"ALL": []}
+        for p in participants:
+            diag = p.diagnosis if p.diagnosis else "Unknown"
+            if diag not in grouped:
+                grouped[diag] = []
+            grouped[diag].append(p.participant_id)
+            grouped["ALL"].append(p.participant_id)
+        
+        # Zoradíme ID v rámci kategórií
+        for diag in grouped:
+            grouped[diag].sort()
+            
+        return grouped
+    except Exception as e:
+        logger.error(f"Error grouping cases: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Endpoint na výpis všetkých súborov v prípade (rekurzívne hľadanie)
 @app.get("/cases/{case_id}/files")
 def list_case_files(case_id: str):

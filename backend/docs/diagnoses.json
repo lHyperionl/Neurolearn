@@ -51,43 +51,48 @@
     ],
     "differentials": ["Learning Disabilities", "Anxiety Disorders", "Bipolar Disorder"]
   },
-  "GBM": {
-    "name": "Glioblastoma Multiforme (GBM)",
-    "shortName": "GBM",
-    "grade": "Grade IV",
-    "tags": ["Malignant"],
-    "description": "Aggressive primary brain tumor with necrosis and infiltrative growth.",
-    "keyFeatures": [
-      "Irregular ring enhancement around necrosis.",
-      "Marked vasogenic edema.",
-      "Mass effect and possible midline shift."
+
+   "HGG": {
+    "name": "High-Grade Glioma (HGG)",
+    "shortName": "HGG",
+    "grade": "Grade III-IV",
+    "tags": [
+      "Malignant",
+      "Aggressive"
     ],
-    "differentials": ["Metastasis", "Abscess", "High-grade Astrocytoma"]
+    "description": "High-grade gliomas, including Glioblastoma (GBM), are aggressive primary brain tumors characterized by rapid cell proliferation, necrosis, and infiltrative growth into surrounding brain tissue.",
+    "keyFeatures": [
+      "Irregular ring enhancement after contrast (gadolinium) administration.",
+      "Presence of central necrotic areas (low signal on T1ce, high on T2).",
+      "Extensive peritumoral edema (high signal on FLAIR/T2).",
+      "Frequent mass effect on adjacent brain structures."
+    ],
+    "differentials": [
+      "Brain Metastasis",
+      "Cerebral Abscess",
+      "Tumefactive Demyelinating Lesion"
+    ]
   },
-  "MENINGIOMA": {
-    "name": "Meningioma",
-    "shortName": "Meningioma",
-    "grade": "Grade I",
-    "tags": ["Benign"],
-    "description": "Extra-axial tumor arising from meninges, typically well-circumscribed with uniform enhancement.",
-    "keyFeatures": [
-      "Dural tail sign.",
-      "Intense, homogeneous enhancement.",
-      "Extra-axial mass with broad dural attachment."
+  
+  "LGG": {
+    "name": "Low-Grade Glioma (LGG)",
+    "shortName": "LGG",
+    "grade": "Grade II",
+    "tags": [
+      "Semi-benign",
+      "Slow-growing"
     ],
-    "differentials": ["Dural Metastasis", "Hemangiopericytoma"]
-  },
-  "MS": {
-    "name": "Multiple Sclerosis",
-    "shortName": "MS",
-    "grade": "N/A",
-    "tags": ["Demyelinating"],
-    "description": "Autoimmune demyelinating disease with characteristic white matter lesions.",
+    "description": "Low-grade gliomas are slower-growing tumors that often appear well-differentiated. They lack the necrotic features of HGG but still have the potential to transform into high-grade tumors over time.",
     "keyFeatures": [
-      "Periventricular ovoid lesions.",
-      "Dawson's fingers on FLAIR.",
-      "New lesions may enhance."
+      "Usually non-enhancing or minimal enhancement on T1ce.",
+      "Hyperintense signal on T2 and FLAIR images.",
+      "Relatively well-defined margins compared to HGG.",
+      "Less pronounced peritumoral edema and mass effect."
     ],
-    "differentials": ["ADEM", "Small Vessel Disease", "Vasculitis"]
+    "differentials": [
+      "Pilocytic Astrocytoma",
+      "Encephalitis",
+      "DNET (Dysembryoplastic Neuroepithelial Tumor)"
+    ]
   }
 }
