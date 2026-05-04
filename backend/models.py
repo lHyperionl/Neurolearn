@@ -33,7 +33,7 @@ class Diagnosis(Base):
     diagnosis_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     code = Column(String(10), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
-    signature = Column(String)
+    signature = Column(String, nullable=False)
 
     participants = relationship(
         "Participant",
