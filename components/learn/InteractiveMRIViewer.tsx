@@ -74,6 +74,7 @@ export default function InteractiveMRIViewer({
         elevation: 15,
     };
 
+    /*
     const applyRenderDefaults = useCallback(() => {
         setRenderOpacity(renderDefaults.opacity);
         setRenderIllumination(renderDefaults.illumination);
@@ -104,6 +105,7 @@ export default function InteractiveMRIViewer({
             );
         }
     }, []);
+    */
 
     // Initialize Niivue
     useEffect(() => {
@@ -113,10 +115,11 @@ export default function InteractiveMRIViewer({
             loadingText: "Initializing Neural Stream...",
             backColor: [0.05, 0.07, 0.09, 1],
             show3Dcrosshair: true,
-            onLocationChange: () => {},
+            // @ts-ignore - glAttributes is passed to the canvas context creation
             glAttributes: { preserveDrawingBuffer: true },
-        });
+        } as any);
 
+        nv.onLocationChange = () => {};
         nvRef.current = nv;
         nv.attachToCanvas(canvasRef.current);
         nv.setSliceType(nv.sliceTypeAxial);
@@ -140,15 +143,17 @@ export default function InteractiveMRIViewer({
             nv.setSliceType(nv.sliceTypeMultiplanar);
         }
 
-        if (typeof nv.draw === "function") {
-            nv.draw();
+        if (typeof nv.drawScene === "function") {
+            nv.drawScene();
         }
 
         setViewMode(mode);
+        /*
         if (mode === "render") {
             applyRenderDefaults();
         }
-    }, [applyRenderDefaults]);
+        */
+    }, [viewMode]);
 
     // Load Volume and Generate Thumbnails
     useEffect(() => {
@@ -179,8 +184,8 @@ export default function InteractiveMRIViewer({
 
                 // Finalize state
                 const nv = nvRef.current!;
-                if (typeof nv.draw === "function") {
-                    nv.draw();
+                if (typeof nv.drawScene === "function") {
+                    nv.drawScene();
                 }
 
                 // Generate thumbnails with a small delay for WebGL rendering
@@ -198,7 +203,7 @@ export default function InteractiveMRIViewer({
 
                     for (const m of modes) {
                         nv.setSliceType(m.val);
-                        if (typeof nv.draw === "function") nv.draw();
+                        if (typeof nv.drawScene === "function") nv.drawScene();
                         thumbs[m.key] = nv.canvas?.toDataURL();
                     }
 
@@ -216,6 +221,7 @@ export default function InteractiveMRIViewer({
         loadVolume();
     }, [url, overlayUrl]);
 
+    /*
     useEffect(() => {
         if (viewMode !== "render") return;
         if (!nvRef.current?.volumes?.length) return;
@@ -236,6 +242,7 @@ export default function InteractiveMRIViewer({
         clipAzimuth,
         clipElevation,
     ]);
+    */
 
     const handleFullscreenToggle = async () => {
         if (!containerRef.current) return;
@@ -252,7 +259,11 @@ export default function InteractiveMRIViewer({
 
         const activeMode = viewMode;
         nv.setDefaults(undefined, true);
-        applyRenderDefaults();
+        
+        // Reset backColor to the custom grey-blue, as setDefaults reverts it to pitch black
+        nv.opts.backColor = [0.05, 0.07, 0.09, 1];
+        
+        // applyRenderDefaults();
         setColormap("gray");
 
         if (nv.volumes[0]) {
@@ -261,10 +272,10 @@ export default function InteractiveMRIViewer({
 
         updateViewMode(activeMode);
 
-        if (typeof nv.draw === "function") {
-            nv.draw();
+        if (typeof nv.drawScene === "function") {
+            nv.drawScene();
         }
-    }, [applyRenderDefaults, updateViewMode, viewMode]);
+    }, [updateViewMode, viewMode]);
 
     const handleShowAllModes = () => {
         updateViewMode("multiplanar");
@@ -311,7 +322,7 @@ export default function InteractiveMRIViewer({
             {/* Header / Toolbar */}
             <div className="flex items-center justify-between mb-4 border-b border-[#3c494e]/30 pb-3">
                  <h3 className="font-mono text-lg text-[#a8e8ff] tracking-tighter">
-                    [ INTERACTIVE_VIEWER_V2.0 ]
+                    [ INTERACTIVE_VIEWER ]
                 </h3>
                 <div className="flex flex-wrap justify-end gap-4">
                      <button
@@ -366,7 +377,7 @@ export default function InteractiveMRIViewer({
 
                               for (const m of modes) {
                                   nv.setSliceType(m.val);
-                                  if (typeof nv.draw === "function") nv.draw();
+                                  if (typeof nv.drawScene === "function") nv.drawScene();
                                   thumbs[m.key] = nv.canvas?.toDataURL();
                               }
 
