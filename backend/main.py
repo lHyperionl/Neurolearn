@@ -356,11 +356,14 @@ def get_questions(participant_id: str, db: Session = Depends(get_db)):
         diagnose = random.choice(diagnoses)
         if diagnose not in answers:
             answers.append(diagnose)
+    
+    filename = list_case_files(participant_id)["files"][0]
+    random.shuffle(answers)
 
     return {
-        "nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{participant_id}_T1w.nii.gz",
+        "nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{filename}",
         "participant_id": participant_id,
-        "answers": list(answers),
+        "answers": answers,
         "correct": participant_data["diagnosis"],
         "signature": participant_data["diagnosis_signature"],
     }

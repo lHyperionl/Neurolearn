@@ -51,7 +51,7 @@ export default function TestPage() {
         );
         const data = await res.json();
         setCurrentQuestion(data);
-        console.log(data.answers[0].code)
+        console.log(data.nifti_url)
       } catch (err) {
         console.error(err);
       }
@@ -128,6 +128,7 @@ export default function TestPage() {
             <MRITestViewer
               key={currentQuestion.participant_id}
               participant_id={currentQuestion.participant_id}
+              url={currentQuestion.nifti_url}
             />
           </div>
 
