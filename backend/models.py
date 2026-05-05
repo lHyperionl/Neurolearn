@@ -84,7 +84,3 @@ class Answer(Base):
     is_correct = Column(Boolean, nullable=False, default=False)
 
     question = relationship("Question", back_populates="answers")
-
-    __table_args__ = (
-        UniqueConstraint('question_id', 'label', name='uq_question_label'),
-    )
