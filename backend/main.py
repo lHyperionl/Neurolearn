@@ -8,6 +8,7 @@ import csv
 import mimetypes
 import logging
 import json
+import random
 
 try:
     from .models import Diagnosis
@@ -334,15 +335,12 @@ def get_diagnosis(diagnosis_id: int, db: Session = Depends(get_db)):
 
 @app.get("/questions/generate_pids")
 def get_questions(db: Session = Depends(get_db)):
-    import random
-    count = get_participants_count(db)
     participants_ids = get_participants(db)
 
     ids = set()
 
     while len(ids) < 10:
-        number = random.randrange(0,count-1)
-        ids.add(participants_ids[number])
+        ids.add(random.choice(participants_ids))
 
     return ids
 
@@ -350,10 +348,19 @@ def get_questions(db: Session = Depends(get_db)):
 def get_questions(participant_id: str, db: Session = Depends(get_db)):
     participant_data = get_participant(participant_id,db)
 
+    diagnoses = list_diagnoses(db)
+
+    answers = list(filter(lambda d: d["code"] == participant_data["diagnosis"], diagnoses))
+
+    while len(answers) < 4:
+        diagnose = random.choice(diagnoses)
+        if diagnose not in answers:
+            answers.append(diagnose)
+
     return {
         "nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{participant_id}_T1w.nii.gz",
         "participant_id": participant_id,
-        "answers": ["ADHD","CONTROL","SCHZ","BIPOLAR"],
+        "answers": list(answers),
         "correct": participant_data["diagnosis"],
         "signature": participant_data["diagnosis_signature"],
     }

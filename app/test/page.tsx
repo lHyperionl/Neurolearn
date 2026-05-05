@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import MRITestViewer from "@/components/test/MRITestViewer";
 
+interface Answer {
+    diagnosis_id: string;
+    code: string;
+    name: string;
+    signature: string;
+}
+
 export default function TestPage() {
   const questionPrompt = "What diagnosis can you see on the MRI?";
-
-  const diagnosisLabelMap: Record<string, string> = {
-    CONTROL: "Healthy",
-    SCHZ: "Schizophrenia",
-    BIPOLAR: "Bipolar disorder",
-    ADHD: "ADHD",
-  };
 
   const [allCases, setAllCases] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
@@ -51,6 +51,7 @@ export default function TestPage() {
         );
         const data = await res.json();
         setCurrentQuestion(data);
+        console.log(data.answers[0].code)
       } catch (err) {
         console.error(err);
       }
@@ -87,10 +88,6 @@ export default function TestPage() {
     setIsFinished(false);
     setAnswered(false);
     setSelectedAnswer(null);
-  };
-
-  const getAnswerLabel = (value: string) => {
-    return diagnosisLabelMap[value.toUpperCase()] ?? value;
   };
 
   return (
@@ -146,8 +143,8 @@ export default function TestPage() {
 
             <div className="flex-1 flex flex-col gap-3 pt-4">
               <div className="grid grid-cols-1 gap-3 flex-1 content-start">
-                {currentQuestion.answers.map((value: string) => {
-                  const isCorrect = value === currentQuestion.correct;
+                {currentQuestion.answers.map((value: Answer) => {
+                  const isCorrect = value.code === currentQuestion.correct;
 
                   let base =
                     "group p-4 flex flex-col text-left transition-all border-l-2 font-syne uppercase tracking-wide";
@@ -156,10 +153,10 @@ export default function TestPage() {
                     "bg-[#1e2023] hover:bg-[#282a2d] border-transparent text-[#e2e2e6]";
 
                   if (answered) {
-                    if (value === currentQuestion.correct) {
+                    if (value.code === currentQuestion.correct) {
                       style =
                         "bg-[#333538] border-[#a8e8ff] text-[#00d4ff] shadow-[0_0_15px_rgba(168,232,255,0.1)]";
-                    } else if (value === selectedAnswer) {
+                    } else if (value.code === selectedAnswer) {
                       style =
                         "bg-[#3a1f1f] border-[#ff6b6b] text-[#ff6b6b] shadow-[0_0_10px_rgba(255,107,107,0.2)]";
                     } else {
@@ -169,13 +166,13 @@ export default function TestPage() {
 
                   return (
                     <button
-                      key={value}
+                      key={value.code}
                       disabled={answered}
-                      onClick={() => handleAnswer(value, isCorrect)}
+                      onClick={() => handleAnswer(value.code, isCorrect)}
                       className={`${base} ${style}`}
                     >
                       <span className="font-bold text-sm">
-                        {getAnswerLabel(value)}
+                        {value.name}
                       </span>
                     </button>
                   );
@@ -186,7 +183,7 @@ export default function TestPage() {
                       <div>
                         <span className="font-bold text-[#a8e8ff]">
                           Good job! Correct diagnosis is:
-                          {` ${getAnswerLabel(currentQuestion.correct)}`}
+                          {currentQuestion.correct}
                         </span>
                         <div className="mt-2">
                           {currentQuestion.signature ??
@@ -197,7 +194,7 @@ export default function TestPage() {
                       <div>
                         <span className="font-bold text-[#ff6b6b]">
                           Wrong! Correct diagnosis is:
-                          {` ${getAnswerLabel(currentQuestion.correct)}`}
+                          {currentQuestion.correct}
                         </span>
                         <div className="mt-2">
                           {currentQuestion.signature ??
