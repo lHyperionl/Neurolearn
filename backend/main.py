@@ -116,7 +116,7 @@ def list_cases_grouped(db: Session = Depends(get_db)):
         # Inicializujeme s kategóriou ALL
         grouped = {"ALL": []}
         for p in participants:
-            diag = p.diagnosis if p.diagnosis else "Unknown"
+            diag = p.diagnosis_id if p.diagnosis_id else "Unknown"
             if diag not in grouped:
                 grouped[diag] = []
             grouped[diag].append(p.participant_id)
