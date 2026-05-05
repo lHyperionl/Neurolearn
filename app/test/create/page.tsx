@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Sidebar from "@/components/nav/Sidebar";
+import { motion } from "framer-motion";
 
 interface AnswerInput {
-  label: "A" | "B" | "C" | "D";
   text: string;
   is_correct: boolean;
 }
@@ -20,9 +21,12 @@ export default function CreateTestPage() {
   const [questions, setQuestions] = useState<QuestionInput[]>([]);
   const [participants, setParticipants] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"error" | "success" | null>(
+    null,
+  );
 
   useEffect(() => {
-    // fetch participants for mapping questions (optional)
     fetch("http://127.0.0.1:8000/participants/all")
       .then((r) => r.json())
       .then((data) => setParticipants(data || []))
@@ -33,10 +37,10 @@ export default function CreateTestPage() {
     participant_id: participants[0] || "",
     text: "",
     answers: [
-      { label: "A", text: "", is_correct: false },
-      { label: "B", text: "", is_correct: false },
-      { label: "C", text: "", is_correct: false },
-      { label: "D", text: "", is_correct: false },
+      { text: "", is_correct: false },
+      { text: "", is_correct: false },
+      { text: "", is_correct: false },
+      { text: "", is_correct: false },
     ],
   });
 
@@ -97,7 +101,11 @@ export default function CreateTestPage() {
 
   const handleSubmit = async () => {
     const err = validate();
-    if (err) return alert(err);
+    if (err) {
+      setMessage(err);
+      setMessageType("error");
+      return;
+    }
 
     const payload = {
       title,
@@ -106,7 +114,6 @@ export default function CreateTestPage() {
         participant_id: q.participant_id,
         text: q.text,
         answers: q.answers.map((a) => ({
-          label: a.label,
           text: a.text,
           is_correct: a.is_correct,
         })),
@@ -121,111 +128,208 @@ export default function CreateTestPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Failed to create test");
-      alert("Test created");
-      // reset
+      setMessage("Test created");
+      setMessageType("success");
       setTitle("");
       setDescription("");
       setQuestions([]);
     } catch (e: any) {
-      alert(e.message || "Error");
+      setMessage(e?.message || "Error");
+      setMessageType("error");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 py-8">
-      <div className="bg-[#1e2023] border border-[#3c494e] p-6">
-        <h1 className="font-syne text-2xl mb-2">Create Test</h1>
-        <div className="space-y-3">
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Test title"
-            className="w-full p-3 bg-[#0f1315] border border-[#2b3538]"
-          />
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Optional description"
-            className="w-full p-3 bg-[#0f1315] border border-[#2b3538]"
-          />
+    <div className="flex flex-1 overflow-hidden">
+      <Sidebar />
+      <main className="relative flex-1 overflow-y-auto overflow-x-hidden bg-[#0c0e11]">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -right-32 w-72 h-72 bg-cyan-500/10 blur-[140px]" />
+          <div className="absolute top-1/3 -left-20 w-48 h-48 bg-amber-500/10 blur-[120px]" />
+          <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(to_right,#2a2f35_1px,transparent_1px),linear-gradient(to_bottom,#2a2f35_1px,transparent_1px)] bg-[size:32px_32px]" />
         </div>
-      </div>
 
-      <div className="space-y-4">
-        {questions.map((q, qi) => (
-          <div key={qi} className="bg-[#121314] border border-[#2b3538] p-4">
-            <div className="flex justify-between items-center mb-3">
-              <div className="font-bold">Question {qi + 1}</div>
-              <div className="flex gap-2">
-                <select
-                  value={q.participant_id}
-                  onChange={(e) =>
-                    updateQuestion(qi, { participant_id: e.target.value })
-                  }
-                  className="bg-[#0f1315] border border-[#2b3538] p-2"
-                >
-                  <option value="">Select participant</option>
-                  {participants.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => removeQuestion(qi)}
-                  className="bg-[#ff6b6b] px-3 py-1"
-                >
-                  Remove
-                </button>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="relative z-10 max-w-4xl mx-auto px-6 py-10"
+        >
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div>
+              <div className="font-mono text-xs uppercase tracking-[0.45em] text-cyan-300/70">
+                Admin
               </div>
-            </div>
-
-            <input
-              value={q.text}
-              onChange={(e) => updateQuestion(qi, { text: e.target.value })}
-              placeholder="Question text"
-              className="w-full p-2 mb-3 bg-[#0f1315] border border-[#2b3538]"
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {q.answers.map((a, ai) => (
-                <div key={a.label} className="flex items-start gap-2">
-                  <label className="w-6">{a.label}</label>
-                  <input
-                    value={a.text}
-                    onChange={(e) =>
-                      updateAnswer(qi, ai, { text: e.target.value })
-                    }
-                    placeholder={`Answer ${a.label}`}
-                    className="flex-1 p-2 bg-[#0f1315] border border-[#2b3538]"
-                  />
-                  <input
-                    type="radio"
-                    name={`correct-${qi}`}
-                    checked={a.is_correct}
-                    onChange={() => markCorrect(qi, ai)}
-                  />
-                </div>
-              ))}
+              <h1 className="font-syne text-4xl font-extrabold text-[#e2e2e6] tracking-tight mt-2">
+                Create Test
+              </h1>
+              <p className="text-sm text-slate-400 mt-2">
+                Compose a saved test by mapping each question to a participant.
+              </p>
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="flex gap-3">
-        <button onClick={addQuestion} className="bg-[#a8e8ff] px-4 py-2">
-          Add Question
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={saving}
-          className="bg-[#00d4ff] px-4 py-2 disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Create Test"}
-        </button>
-      </div>
+          {/* message moved below to appear above form action buttons */}
+
+          <div className="border border-[#3c494e] bg-[#14171c]/80 p-6 rounded-md">
+            <div className="space-y-3">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Test title"
+                className="w-full p-3 bg-[#0f1315] border border-[#2b3538] rounded-md"
+              />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Optional description"
+                className="w-full p-3 bg-[#0f1315] border border-[#2b3538] rounded-md"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-6 mt-6">
+            {questions.map((q, qi) => (
+              <div
+                key={qi}
+                className="border border-[#3c494e] bg-[#14171c]/80 p-6 rounded-md"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <div className="font-bold">Question {qi + 1}</div>
+                    <div className="text-sm text-slate-400">
+                      Map this question to a participant
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => removeQuestion(qi)}
+                      className="bg-transparent border border-[#ff6b6b] text-[#ff6b6b] px-3 py-1 rounded-md"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Question text
+                    </label>
+                    <input
+                      value={q.text}
+                      onChange={(e) =>
+                        updateQuestion(qi, { text: e.target.value })
+                      }
+                      placeholder="Question text"
+                      className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Participant
+                    </label>
+                    <select
+                      value={q.participant_id}
+                      onChange={(e) =>
+                        updateQuestion(qi, { participant_id: e.target.value })
+                      }
+                      className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
+                    >
+                      <option value="">Select</option>
+                      {participants.map((p) => (
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {q.answers.map((a, ai) => (
+                    <div key={ai}>
+                      <label className="block text-xs text-slate-400 mb-1">
+                        Answer {String.fromCharCode(65 + ai)}
+                      </label>
+                      <div className="flex gap-3 items-center">
+                        <input
+                          value={a.text}
+                          onChange={(e) =>
+                            updateAnswer(qi, ai, { text: e.target.value })
+                          }
+                          placeholder={`Answer ${String.fromCharCode(65 + ai)}`}
+                          className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
+                        />
+                        <label className="flex items-center gap-2 text-sm text-slate-200">
+                          <input
+                            type="radio"
+                            name={`correct-${qi}`}
+                            checked={a.is_correct}
+                            onChange={() => markCorrect(qi, ai)}
+                          />
+                          <span className="text-xs text-slate-400">
+                            Correct
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* message banner above action buttons (full width of form) */}
+          {message && (
+            <div className="w-full mb-4">
+              <div
+                className={`w-full p-3 rounded-md text-sm ${
+                  messageType === "error"
+                    ? "bg-[#2b0f10] text-[#ffb3b3] border border-[#4b1b1c]"
+                    : "bg-[#0b2b25] text-[#baf3de] border border-[#114036]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>{message}</div>
+                  <button
+                    onClick={() => {
+                      setMessage(null);
+                      setMessageType(null);
+                    }}
+                    className="text-xs opacity-80"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-6">
+            <div>
+              <button
+                onClick={addQuestion}
+                className="bg-[#a8e8ff] text-[#003642] px-4 py-2 rounded-md font-bold"
+              >
+                Add Question
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={handleSubmit}
+                disabled={saving}
+                className="bg-[#00d4ff] disabled:opacity-50 text-[#002022] px-5 py-2 rounded-md font-bold"
+              >
+                {saving ? "Saving..." : "Create Test"}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </main>
     </div>
   );
 }
