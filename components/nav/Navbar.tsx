@@ -10,6 +10,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Learn", href: "/learn" },
     { name: "Test Yourself", href: "/test" },
+    { name: "Create Test", href: "/test/create" },
     { name: "Add Case", href: "/add-case" },
     { name: "Add Diagnosis", href: "/add-diagnosis" },
   ];

@@ -33,10 +33,10 @@ mimetypes.add_type('application/octet-stream', '.nii')
 
 try:
     from .database import get_db, Base, engine
-    from .models import Participant
+    from .models import Participant, Test, Question, Answer
 except ImportError:
     from database import get_db, Base, engine
-    from models import Participant
+    from models import Participant, Test, Question, Answer
 
 
 app = FastAPI()
@@ -368,6 +368,21 @@ def get_questions(participant_id: str, db: Session = Depends(get_db)):
         "signature": participant_data["diagnosis_signature"],
     }
 
+
+@app.get("/participants/{participant_id}/nifti")
+def participant_nifti(participant_id: str):
+    try:
+        filename = list_case_files(participant_id)["files"][0]
+        return {"nifti_url": f"http://127.0.0.1:8000/files/{participant_id}/{filename}"}
+    except IndexError:
+        raise HTTPException(status_code=404, detail="No NIfTI files for participant")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"participant_nifti error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get nifti url")
+
+
 def load_diagnoses() -> dict:
     if not os.path.exists(DIAGNOSES_PATH):
         return {}
@@ -433,6 +448,130 @@ def create_diagnosis(payload: DiagnosisCreate, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Failed to create diagnosis: {e}")
         raise HTTPException(status_code=500, detail="Failed to create diagnosis")
+
+
+class AnswerCreate(BaseModel):
+    text: str
+    is_correct: bool
+
+
+class QuestionCreate(BaseModel):
+    participant_id: str
+    text: str
+    answers: list[AnswerCreate]
+
+
+class TestCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    questions: list[QuestionCreate]
+
+
+@app.post("/tests")
+def create_test(payload: TestCreate, db: Session = Depends(get_db)):
+    if not payload.title or not payload.title.strip():
+        raise HTTPException(status_code=400, detail="Test title is required")
+
+    if not payload.questions:
+        raise HTTPException(status_code=400, detail="At least one question is required")
+
+    try:
+        test = Test(title=payload.title.strip(), description=payload.description)
+        db.add(test)
+        db.flush()
+
+        for qi, q in enumerate(payload.questions, start=1):
+            if len(q.answers) != 4:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: must have exactly 4 answers")
+            correct_cnt = sum(1 for a in q.answers if a.is_correct)
+            if correct_cnt != 1:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: must have exactly one correct answer")
+
+            # ensure participant exists
+            participant = db.query(Participant).filter(Participant.participant_id == q.participant_id).first()
+            if not participant:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: participant '{q.participant_id}' not found")
+
+            question = Question(test_id=test.test_id, participant_id=q.participant_id, text=q.text)
+            db.add(question)
+            db.flush()
+
+            for a in q.answers:
+                ans = Answer(question_id=question.question_id, text=a.text, is_correct=a.is_correct)
+                db.add(ans)
+
+        db.commit()
+        db.refresh(test)
+        return {"test_id": test.test_id}
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to create test: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create test")
+
+
+@app.get("/tests")
+def list_tests(db: Session = Depends(get_db)):
+    try:
+        tests = db.query(Test).all()
+        result = []
+        for t in tests:
+            tq = []
+            for q in t.questions:
+                qa = []
+                for a in q.answers:
+                    qa.append({"answer_id": a.answer_id, "text": a.text, "is_correct": a.is_correct})
+                tq.append({
+                    "question_id": q.question_id,
+                    "participant_id": q.participant_id,
+                    "text": q.text,
+                    "answers": qa,
+                })
+            result.append({"test_id": t.test_id, "title": t.title, "description": t.description, "questions": tq})
+        return result
+    except Exception as e:
+        logger.error(f"Failed to list tests: {e}")
+        raise HTTPException(status_code=500, detail="Failed to list tests")
+
+
+@app.get("/tests/{test_id}")
+def get_test(test_id: int, db: Session = Depends(get_db)):
+    try:
+        t = db.query(Test).filter(Test.test_id == test_id).first()
+        if not t:
+            raise HTTPException(status_code=404, detail="Test not found")
+
+        tq = []
+        for q in t.questions:
+            # attempt to resolve a nifti file for participant
+            nifti_url = None
+            try:
+                files = list_case_files(q.participant_id).get("files", [])
+                if files:
+                    nifti_url = f"http://127.0.0.1:8000/files/{q.participant_id}/{files[0]}"
+            except Exception:
+                nifti_url = None
+
+            qa = []
+            for a in q.answers:
+                qa.append({"answer_id": a.answer_id, "text": a.text, "is_correct": a.is_correct})
+
+            tq.append({
+                "question_id": q.question_id,
+                "participant_id": q.participant_id,
+                "text": q.text,
+                "nifti_url": nifti_url,
+                "answers": qa,
+            })
+
+        return {"test_id": t.test_id, "title": t.title, "description": t.description, "questions": tq}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get test: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get test")
 
 @app.get("/diagnoses/{diagnosis_key}")
 def get_diagnosis_info(diagnosis_key: str):

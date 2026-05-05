@@ -11,7 +11,8 @@ interface MRIViewerNiiVueProps {
 type ViewMode = "axial" | "coronal" | "sagittal" | "all";
 
 export default function MRITestViewer({
-  participant_id, url
+  participant_id,
+  url,
 }: MRIViewerNiiVueProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
