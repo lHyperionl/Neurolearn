@@ -5,12 +5,14 @@ import { Niivue, SHOW_RENDER } from "@niivue/niivue";
 
 interface MRIViewerNiiVueProps {
   participant_id: string;
+  url: string;
 }
 
 type ViewMode = "axial" | "coronal" | "sagittal" | "all";
 
 export default function MRITestViewer({
   participant_id,
+  url,
 }: MRIViewerNiiVueProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -54,8 +56,6 @@ export default function MRITestViewer({
     "magma",
     "cividis",
   ];
-
-  const url = `http://127.0.0.1:8000/files/${participant_id}/${participant_id}_T1w.nii.gz`;
 
   const applyViewMode = useCallback((nv: Niivue, mode: ViewMode) => {
     const v = nv.volumes[0];
