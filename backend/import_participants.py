@@ -43,6 +43,8 @@ def ensure_diagnoses(db):
         ("SCHZ", "Schizophrenia", "Enlarged ventricles and reduced gray matter, especially in frontal and temporal lobes."),
         ("BIPOLAR", "Bipolar Disorder", "Alterations in the limbic system (e.g., amygdala, hippocampus) and prefrontal regions linked to emotion regulation."),
         ("ADHD", "ADHD", "Reduced volume in the prefrontal cortex and basal ganglia, sometimes with delayed cortical development."),
+        ("LGG", "Low-Grade Glioma", "Uniform, solid mass with relatively well-defined edges, typically little to no swelling (edema) in the surrounding brain tissue."),
+        ("HGG", "High-Grade Glioma", "Hallmark is a brightly glowing ring that appears after contrast is administered, this ring surrounds a dark center, which consists of dead tissue (necrosis) that the tumor outgrew.")
     ]
 
     for code, name, signature in predefined:
