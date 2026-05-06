@@ -69,6 +69,7 @@ export default function LearnCasePage() {
     const [diagnosisLoading, setDiagnosisLoading] = useState(false);
     const [diagnosisError, setDiagnosisError] = useState<string | null>(null);
     const [showDiagnosis, setShowDiagnosis] = useState(false);
+    const [showPatientInfo, setShowPatientInfo] = useState(false);
 
     useEffect(() => {
         if (!currentCategory) {
@@ -271,27 +272,34 @@ export default function LearnCasePage() {
                     >
                         <div className="bg-[#1e2023] border border-[#3c494e] p-4">
                             <div className="flex items-center justify-between mb-3">
-                                <h2 className="font-mono text-xs uppercase tracking-widest text-[#a8e8ff]">
+                                <h2 className="font-mono text-lg uppercase tracking-widest text-[#a8e8ff]">
                                     Case {selectedCase}
                                 </h2>
                                 <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPatientInfo(!showPatientInfo)}
+                                        className="px-4 py-1.5 text-sm font-mono uppercase bg-[#1a1c1f] border border-cyan-500/30 text-cyan-400 hover:border-cyan-500/60 hover:bg-cyan-500/5 transition-all shadow-[0_0_10px_rgba(0,212,255,0.1)]"
+                                    >
+                                        {showPatientInfo ? "Hide Context" : "Show Context"}
+                                    </button>
                                     <Link
                                         href="/learn"
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                        className="px-4 py-1.5 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
                                     >
                                         Back
                                     </Link>
                                     <button
                                         type="button"
                                         onClick={handlePreviousCase}
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                        className="px-4 py-1.5 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
                                     >
                                         Previous case
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handleNextCase}
-                                        className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
+                                        className="px-4 py-1.5 text-sm font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
                                     >
                                         Next case
                                     </button>
@@ -319,40 +327,34 @@ export default function LearnCasePage() {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">
-                                    Case ID
+                        {showPatientInfo && patientInfo && (
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
+                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Sequence</span>
+                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
+                                        {sequenceLabel}
+                                    </span>
                                 </div>
-                                <div className="text-xs font-mono text-slate-200">
-                                    {selectedCase}
+                                <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
+                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Diagnosis</span>
+                                    <span className="text-lg font-mono font-bold text-amber-400 group-hover:text-amber-300 transition-colors uppercase">
+                                        {patientInfo.diagnosis}
+                                    </span>
                                 </div>
-                            </div>
-                            <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">
-                                    Sequence
+                                <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
+                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Age</span>
+                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
+                                        {patientInfo.age} <span className="text-xs text-slate-500 font-normal">YRS</span>
+                                    </span>
                                 </div>
-                                <div className="text-xs font-mono text-slate-200">
-                                    {sequenceLabel}
-                                </div>
-                            </div>
-                            <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">
-                                    View
-                                </div>
-                                <div className="text-xs font-mono text-slate-200">
-                                    {viewLabel}
-                                </div>
-                            </div>
-                            <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">
-                                    Mask
-                                </div>
-                                <div className="text-xs font-mono text-slate-200">
-                                    {hasOverlay ? "Available" : "None"}
+                                <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
+                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Gender</span>
+                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
+                                        {patientInfo.gender === 'F' ? 'FEMALE' : (patientInfo.gender === 'M' ? 'MALE' : patientInfo.gender)}
+                                    </span>
                                 </div>
                             </div>
-                        </div>
+                        )}
 
                         {selectedFile && (
                             <div className="flex flex-col gap-3">
@@ -387,8 +389,8 @@ export default function LearnCasePage() {
                                     <button
                                         className={
                                             showOverlay
-                                                ? "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
-                                                : "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
+                                                ? "px-6 py-3 rounded-md font-mono border transition-colors text-sm bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
+                                                : "px-6 py-3 rounded-md font-mono border transition-colors text-sm bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
                                         }
                                         onClick={() =>
                                             setShowOverlay((value) => !value)

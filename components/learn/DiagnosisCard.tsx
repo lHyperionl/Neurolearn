@@ -24,7 +24,7 @@ const DiagnosisCard = ({ diagnosis }: DiagnosisCardProps) => {
     const keyFeatures = diagnosis.keyFeatures ?? [];
     const differentials = diagnosis.differentials ?? [];
 
-    const name = diagnosis.shortName ?? diagnosis.name ?? "UNSPECIFIED CASE";
+    const name = diagnosis.name ?? diagnosis.shortName ?? "UNSPECIFIED CASE";
     const description =
         diagnosis.description ||
         "Clinical details for this specific neuroimaging case are retrieved from the BIDS dataset participant metadata.";
