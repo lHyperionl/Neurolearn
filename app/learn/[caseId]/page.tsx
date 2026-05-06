@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import InteractiveMRIViewer from "@/components/learn/InteractiveMRIViewer";
 import DiagnosisCard, { DiagnosisInfo } from "@/components/learn/DiagnosisCard";
@@ -42,9 +42,11 @@ const getSequenceLabel = (fileName?: string | null) => {
 export default function LearnCasePage() {
     const params = useParams<{ caseId: string }>();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const selectedCase = Array.isArray(params.caseId)
         ? params.caseId[0]
         : params.caseId;
+    const currentCategory = searchParams.get("category");
 
     const [cases, setCases] = useState<string[]>([]);
     const [caseListLoading, setCaseListLoading] = useState(false);
@@ -69,24 +71,44 @@ export default function LearnCasePage() {
     const [showDiagnosis, setShowDiagnosis] = useState(false);
 
     useEffect(() => {
-        setCaseListLoading(true);
-        fetch(`${API_URL}/cases`)
-            .then((res) => res.json())
-            .then((data) => {
-                if (Array.isArray(data)) {
-                    setCases(data);
-                } else if (data && Array.isArray(data.cases)) {
-                    setCases(data.cases);
-                } else {
-                    setCases([]);
-                }
-                setCaseListLoading(false);
-            })
-            .catch(() => {
-                setCaseListError("Failed to load cases.");
-                setCaseListLoading(false);
-            });
-    }, []);
+        if (!currentCategory) {
+            // No category selected, fetch all cases
+            setCaseListLoading(true);
+            fetch(`${API_URL}/cases`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (Array.isArray(data)) {
+                        setCases(data);
+                    } else if (data && Array.isArray(data.cases)) {
+                        setCases(data.cases);
+                    } else {
+                        setCases([]);
+                    }
+                    setCaseListLoading(false);
+                })
+                .catch(() => {
+                    setCaseListError("Failed to load cases.");
+                    setCaseListLoading(false);
+                });
+        } else {
+            // Fetch grouped cases and filter by category
+            setCaseListLoading(true);
+            fetch(`${API_URL}/cases/grouped`)
+                .then((res) => res.json())
+                .then((data) => {
+                    if (data && data[currentCategory]) {
+                        setCases(data[currentCategory]);
+                    } else {
+                        setCases([]);
+                    }
+                    setCaseListLoading(false);
+                })
+                .catch(() => {
+                    setCaseListError("Failed to load cases.");
+                    setCaseListLoading(false);
+                });
+        }
+    }, [currentCategory]);
 
     useEffect(() => {
         if (!selectedCase) return;
@@ -190,7 +212,12 @@ export default function LearnCasePage() {
         const currentIndex = cases.indexOf(selectedCase);
         const nextIndex =
             currentIndex >= 0 ? (currentIndex + 1) % cases.length : 0;
-        router.push(`/learn/${cases[nextIndex]}`);
+        const nextCase = cases[nextIndex];
+        // Preserve category in URL
+        const url = currentCategory
+            ? `/learn/${nextCase}?category=${encodeURIComponent(currentCategory)}`
+            : `/learn/${nextCase}`;
+        router.push(url);
     };
 
     const handlePreviousCase = () => {
@@ -198,7 +225,12 @@ export default function LearnCasePage() {
         const currentIndex = cases.indexOf(selectedCase);
         const previousIndex =
             currentIndex > 0 ? currentIndex - 1 : cases.length - 1;
-        router.push(`/learn/${cases[previousIndex]}`);
+        const prevCase = cases[previousIndex];
+        // Preserve category in URL
+        const url = currentCategory
+            ? `/learn/${prevCase}?category=${encodeURIComponent(currentCategory)}`
+            : `/learn/${prevCase}`;
+        router.push(url);
     };
 
     if (!selectedCase) {
