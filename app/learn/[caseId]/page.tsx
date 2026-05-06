@@ -330,26 +330,26 @@ export default function LearnCasePage() {
                         {showPatientInfo && patientInfo && (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                 <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
-                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Sequence</span>
-                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
+                                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest mb-1">Sequence</span>
+                                    <span className="text-xl font-mono font-bold text-slate-200 uppercase">
                                         {sequenceLabel}
                                     </span>
                                 </div>
                                 <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
-                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Diagnosis</span>
-                                    <span className="text-lg font-mono font-bold text-amber-400 group-hover:text-amber-300 transition-colors uppercase">
+                                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest mb-1">Diagnosis</span>
+                                    <span className="text-xl font-mono font-bold text-amber-400 group-hover:text-amber-300 transition-colors uppercase">
                                         {patientInfo.diagnosis}
                                     </span>
                                 </div>
                                 <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
-                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Age</span>
-                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
-                                        {patientInfo.age} <span className="text-xs text-slate-500 font-normal">YRS</span>
+                                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest mb-1">Age</span>
+                                    <span className="text-xl font-mono font-bold text-slate-200 uppercase">
+                                        {patientInfo.age} <span className="text-sm text-slate-500 font-normal">YRS</span>
                                     </span>
                                 </div>
                                 <div className="bg-[#1a1c1f] border border-[#3c494e] py-2 px-3 rounded-lg flex flex-col items-center justify-center text-center group hover:border-[#a8e8ff]/40 transition-colors">
-                                    <span className="text-xs font-mono text-slate-500 uppercase tracking-widest mb-1">Gender</span>
-                                    <span className="text-lg font-mono font-bold text-slate-200 uppercase">
+                                    <span className="text-sm font-mono text-slate-500 uppercase tracking-widest mb-1">Gender</span>
+                                    <span className="text-xl font-mono font-bold text-slate-200 uppercase">
                                         {patientInfo.gender === 'F' ? 'FEMALE' : (patientInfo.gender === 'M' ? 'MALE' : patientInfo.gender)}
                                     </span>
                                 </div>
