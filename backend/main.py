@@ -512,6 +512,66 @@ def create_test(payload: TestCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Failed to create test")
 
 
+@app.put("/tests/{test_id}")
+def update_test(test_id: int, payload: TestCreate, db: Session = Depends(get_db)):
+    """Update an existing test by replacing its title/description and questions.
+
+    This implementation deletes existing questions/answers and recreates them from the payload.
+    """
+    if not payload.title or not payload.title.strip():
+        raise HTTPException(status_code=400, detail="Test title is required")
+
+    if not payload.questions:
+        raise HTTPException(status_code=400, detail="At least one question is required")
+
+    try:
+        t = db.query(Test).filter(Test.test_id == test_id).first()
+        if not t:
+            raise HTTPException(status_code=404, detail="Test not found")
+
+        # validate questions
+        for qi, q in enumerate(payload.questions, start=1):
+            if len(q.answers) != 4:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: must have exactly 4 answers")
+            correct_cnt = sum(1 for a in q.answers if a.is_correct)
+            if correct_cnt != 1:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: must have exactly one correct answer")
+            participant = db.query(Participant).filter(Participant.participant_id == q.participant_id).first()
+            if not participant:
+                raise HTTPException(status_code=400, detail=f"Question {qi}: participant '{q.participant_id}' not found")
+
+        # delete existing answers/questions
+        for q in list(t.questions):
+            for a in list(q.answers):
+                db.delete(a)
+            db.delete(q)
+
+        # update test fields
+        t.title = payload.title.strip()
+        t.description = payload.description
+        db.flush()
+
+        # create new questions/answers
+        for q in payload.questions:
+            question = Question(test_id=t.test_id, participant_id=q.participant_id, text=q.text)
+            db.add(question)
+            db.flush()
+            for a in q.answers:
+                ans = Answer(question_id=question.question_id, text=a.text, is_correct=a.is_correct)
+                db.add(ans)
+
+        db.commit()
+        db.refresh(t)
+        return {"test_id": t.test_id}
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to update test: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to update test")
+
+
 @app.get("/tests")
 def list_tests(db: Session = Depends(get_db)):
     try:
@@ -572,6 +632,44 @@ def get_test(test_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Failed to get test: {e}")
         raise HTTPException(status_code=500, detail="Failed to get test")
+
+
+@app.delete("/tests/{test_id}")
+def delete_test(test_id: int, db: Session = Depends(get_db)):
+    """Delete a test and its related questions and answers.
+
+    Uses explicit deletes and logs full tracebacks to aid debugging.
+    """
+    try:
+        t = db.query(Test).filter(Test.test_id == test_id).first()
+        if not t:
+            raise HTTPException(status_code=404, detail="Test not found")
+
+        # Load related questions and answers to delete explicitly
+        for q in list(t.questions):
+            for a in list(q.answers):
+                try:
+                    db.delete(a)
+                except Exception:
+                    logger.exception("Failed to delete answer %s", getattr(a, 'answer_id', '<unknown>'))
+            try:
+                db.delete(q)
+            except Exception:
+                logger.exception("Failed to delete question %s", getattr(q, 'question_id', '<unknown>'))
+
+        try:
+            db.delete(t)
+        except Exception:
+            logger.exception("Failed to delete test %s", getattr(t, 'test_id', '<unknown>'))
+
+        db.commit()
+        return {"detail": "Test deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to delete test: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to delete test")
 
 @app.get("/diagnoses/{diagnosis_key}")
 def get_diagnosis_info(diagnosis_key: str):
