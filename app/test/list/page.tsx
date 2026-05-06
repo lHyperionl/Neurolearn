@@ -7,6 +7,9 @@ export default function TestsListPage() {
   const [tests, setTests] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<number[] | null>([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [testToDelete, setTestToDelete] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchTests = async () => {
@@ -67,15 +70,90 @@ export default function TestsListPage() {
                 <div className="flex gap-2">
                   <Link
                     href={`/test/take/${t.test_id}`}
-                    className="inline-block px-4 py-2 bg-[#a8e8ff] text-[#003642] font-bold rounded-md"
+                    className="inline-block px-6 py-3 bg-[#a8e8ff] text-[#003642] font-syne font-bold uppercase text-xs tracking-widest hover:brightness-110 transition-all"
                   >
                     Take Test
                   </Link>
+                  <Link
+                    href={`/test/edit/${t.test_id}`}
+                    className="inline-block px-6 py-3 bg-[#003642] text-[#a8e8ff] font-syne font-bold uppercase text-xs tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(0,54,66,0.12)]"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setTestToDelete(t);
+                      setConfirmOpen(true);
+                    }}
+                    disabled={!!deleting?.includes(t.test_id)}
+                    className="inline-block px-6 py-3 bg-[#ff6b6b] text-white font-syne font-bold uppercase text-xs tracking-widest hover:brightness-105 transition-all shadow-[0_0_20px_rgba(255,107,107,0.15)]"
+                  >
+                    {deleting?.includes(t.test_id) ? "Deleting…" : "Delete"}
+                  </button>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
+        {confirmOpen && testToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setConfirmOpen(false)}
+            />
+            <div className="relative z-10 w-full max-w-md bg-[#0f1112] border border-[#2b3538] rounded-md p-6">
+              <h2 className="text-lg font-bold mb-2">Delete test</h2>
+              <p className="text-sm text-slate-400 mb-4">
+                Are you sure you want to delete "{testToDelete.title}"?
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 bg-[#2b2f31] text-slate-200 font-syne font-bold uppercase text-xs tracking-widest rounded-md hover:brightness-105 transition-all"
+                  onClick={() => {
+                    setConfirmOpen(false);
+                    setTestToDelete(null);
+                  }}
+                >
+                  No
+                </button>
+                <button
+                  className="px-4 py-2 bg-[#ff6b6b] text-white font-syne font-bold uppercase text-xs tracking-widest hover:brightness-105 transition-all shadow-[0_0_20px_rgba(255,107,107,0.15)]"
+                  onClick={async () => {
+                    if (!testToDelete) return;
+                    const id = testToDelete.test_id;
+                    try {
+                      setDeleting((prev) => (prev ? [...prev, id] : [id]));
+                      const res = await fetch(
+                        `http://127.0.0.1:8000/tests/${id}`,
+                        { method: "DELETE" },
+                      );
+                      if (!res.ok) {
+                        const text = await res.text();
+                        throw new Error(
+                          text || `Failed to delete test: ${res.status}`,
+                        );
+                      }
+                      setTests((prev) =>
+                        prev ? prev.filter((x) => x.test_id !== id) : prev,
+                      );
+                    } catch (e: any) {
+                      setError(e.message || "Failed to delete test");
+                    } finally {
+                      setDeleting((prev) =>
+                        prev ? prev.filter((i) => i !== id) : [],
+                      );
+                      setConfirmOpen(false);
+                      setTestToDelete(null);
+                    }
+                  }}
+                >
+                  Yes
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
