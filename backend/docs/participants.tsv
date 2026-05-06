@@ -17,7 +17,6 @@ sub-10274	CONTROL	43	M	1	n/a	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10280	CONTROL	27	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10290	CONTROL	48	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10292	CONTROL	49	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
-sub-10299	CONTROL	25	M	n/a	1	n/a	n/a	n/a	1	1	1	n/a	n/a	35343.0	ghost
 sub-10304	CONTROL	23	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10316	CONTROL	29	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	ghost
 sub-10321	CONTROL	34	M	1	1	1	n/a	n/a	1	1	1	1	n/a	35343.0	No_ghost
@@ -33,7 +32,6 @@ sub-10365	CONTROL	24	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10376	CONTROL	42	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10377	CONTROL	49	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10388	CONTROL	50	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
-sub-10428	CONTROL	25	F	n/a	1	n/a	n/a	n/a	1	1	1	n/a	1	35343.0	ghost
 sub-10429	CONTROL	36	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10438	CONTROL	25	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10440	CONTROL	26	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
@@ -44,7 +42,6 @@ sub-10471	CONTROL	30	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10478	CONTROL	21	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10487	CONTROL	31	M	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
 sub-10492	CONTROL	22	F	1	1	1	n/a	n/a	1	1	1	1	1	35343.0	No_ghost
-sub-10501	CONTROL	21	F	n/a	1	n/a	n/a	n/a	1	1	1	n/a	1	35343.0	ghost
 sub-10506	CONTROL	25	M	1	1	1	1	1	1	1	1	1	1	35343.0	ghost
 sub-10517	CONTROL	21	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-10523	CONTROL	24	M	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
@@ -94,7 +91,6 @@ sub-10949	CONTROL	27	M	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-10958	CONTROL	30	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-10963	CONTROL	45	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-10968	CONTROL	24	M	1	1	1	1	1	1	1	1	1	1	35343.0	ghost
-sub-10971	CONTROL	27	F	n/a	1	n/a	n/a	n/a	1	1	1	n/a	1	35343.0	ghost
 sub-10975	CONTROL	32	M	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-10977	CONTROL	47	M	1	1	1	1	1	1	1	1	1	1	35343.0	ghost
 sub-10987	CONTROL	26	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
@@ -121,7 +117,6 @@ sub-11105	CONTROL	27	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-11106	CONTROL	27	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-11108	CONTROL	21	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-11112	CONTROL	29	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
-sub-11121	CONTROL	25	M	n/a	1	n/a	n/a	n/a	1	1	1	n/a	1	35426.0	ghost
 sub-11122	CONTROL	40	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-11128	CONTROL	28	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-11131	CONTROL	38	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
@@ -242,8 +237,6 @@ sub-70026	ADHD	37	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-70029	ADHD	24	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-70033	ADHD	40	M	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-70034	ADHD	21	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
-sub-70035	ADHD	49	F	1	1	n/a	n/a	n/a	1	1	1	n/a	1	35343.0	ghost
-sub-70036	ADHD	48	F	n/a	1	n/a	n/a	n/a	1	1	1	n/a	1	35343.0	ghost
 sub-70037	ADHD	37	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-70040	ADHD	30	F	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
 sub-70046	ADHD	32	M	1	1	1	1	1	1	1	1	1	1	35343.0	No_ghost
@@ -270,4 +263,23 @@ sub-70079	ADHD	21	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-70080	ADHD	48	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-70081	ADHD	50	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
 sub-70083	ADHD	46	F	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
-sub-70086	ADHD	48	M	1	1	1	1	1	1	1	1	1	1	35426.0	No_ghost
+sub-001	HGG	60	F
+sub-002	HGG	52	M
+sub-003	HGG	54	F
+sub-004	HGG	39	M
+sub-005	HGG	68	M
+sub-006	HGG	67	F
+sub-007	HGG	70	F
+sub-008	HGG	68	F
+sub-009	HGG	56	F
+sub-010	HGG	48	F
+sub-260	LGG	42	M
+sub-261	LGG	37	M
+sub-262	LGG	56	F
+sub-263	LGG	53	F
+sub-264	LGG	52	M
+sub-265	LGG	58	M
+sub-266	LGG	30	F
+sub-267	LGG	36	M
+sub-268	LGG	57	M
+sub-269	LGG	67	M

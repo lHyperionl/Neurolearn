@@ -316,20 +316,21 @@ export default function MRIViewerNiiVue({
     await containerRef.current.requestFullscreen();
   };
 
-  const handleResetView = () => {
-    if (nvRef.current.volumes.length > 0) {
-      nvRef.current.setDefaults(undefined, true);
-    }
+   const handleResetView = () => {
+     if (nvRef.current.volumes.length > 0) {
+       nvRef.current.setDefaults(undefined, true);
+     }
 
-    applyViewMode(viewMode);
-    applyColormap();
+     setColormap("gray");
+     applyColormap();
+     applyViewMode(viewMode);
 
-    if (viewMode === "render") {
-      applyRenderDefaults();
-    } else {
-      nvRef.current.setScale(1);
-    }
-  };
+     if (viewMode === "render") {
+       applyRenderDefaults();
+     } else {
+       nvRef.current.setScale(1);
+     }
+   };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -386,29 +387,29 @@ export default function MRIViewerNiiVue({
         >
           {(patientLoading || patientError || patientInfo) && (
             <div className="mb-4 rounded-lg border border-cyan-500/10 bg-[#0f1117] p-3">
-              <div className="font-mono text-xs text-slate-300 mb-2">Patient</div>
-              {patientLoading && (
-                <div className="text-cyan-400 font-mono text-xs">Loading...</div>
-              )}
-              {patientError && (
-                <div className="text-red-400 font-mono text-xs">{patientError}</div>
-              )}
-              {patientInfo && !patientLoading && !patientError && (
-                <div className="space-y-1">
-                  <div className="text-slate-300 font-mono text-xs">
-                    ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
-                  </div>
-                  <div className="text-slate-300 font-mono text-xs">
-                    Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
-                  </div>
-                  <div className="text-slate-300 font-mono text-xs">
-                    Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
-                  </div>
-                  <div className="text-slate-300 font-mono text-xs">
-                    Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
-                  </div>
-                </div>
-              )}
+               <div className="font-mono text-sm text-slate-300 mb-2">Patient</div>
+               {patientLoading && (
+                 <div className="text-cyan-400 font-mono text-sm">Loading...</div>
+               )}
+               {patientError && (
+                 <div className="text-red-400 font-mono text-sm">{patientError}</div>
+               )}
+               {patientInfo && !patientLoading && !patientError && (
+                 <div className="space-y-1">
+                   <div className="text-slate-300 font-mono text-sm">
+                     ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
+                   </div>
+                   <div className="text-slate-300 font-mono text-sm">
+                     Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
+                   </div>
+                   <div className="text-slate-300 font-mono text-sm">
+                     Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
+                   </div>
+                   <div className="text-slate-300 font-mono text-sm">
+                     Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
+                   </div>
+                 </div>
+               )}
             </div>
           )}
           <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -424,8 +425,8 @@ export default function MRIViewerNiiVue({
                 onClick={() => handleViewModeChange(item.key as ViewMode)}
                 className={
                   viewMode === item.key
-                    ? "px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-xs"
-                    : "px-3 py-1 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs hover:border-cyan-500/50"
+                     ? "px-3 py-1 rounded-md bg-cyan-500/20 text-cyan-200 border border-cyan-400/60 font-mono text-sm"
+                     : "px-3 py-1 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-sm hover:border-cyan-500/50"
                 }
               >
                 {item.label}
@@ -433,118 +434,118 @@ export default function MRIViewerNiiVue({
             ))}
           </div>
           <div className="flex items-center gap-2 mb-4">
-            <label className="font-mono text-slate-300 text-xs">Colormap:</label>
-            <select
-              value={colormap}
-              onChange={handleColormapChange}
-              className="bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
-            >
+             <label className="font-mono text-slate-300 text-sm">Colormap:</label>
+             <select
+               value={colormap}
+               onChange={handleColormapChange}
+               className="bg-[#181b22] border border-cyan-500/30 text-cyan-300 font-mono rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-colors"
+             >
               {colormaps.map((cm) => (
                 <option key={cm} value={cm} className="bg-[#181b22] text-cyan-300">{cm}</option>
               ))}
             </select>
-            <button
-              type="button"
-              onClick={handleResetView}
-              className="ml-auto px-3 py-1 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-xs hover:border-cyan-500/50"
-            >
-              Reset view
+             <button
+               type="button"
+               onClick={handleResetView}
+               className="ml-auto px-4 py-2 rounded-md bg-[#181b22] text-slate-300 border border-cyan-500/20 font-mono text-sm hover:border-cyan-500/50"
+             >
+               Reset view
             </button>
           </div>
           <div className="flex-1 overflow-y-auto pr-2 space-y-3">
             {viewMode === "render" && (
               <>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Opacity:
-                  <input
-                    type="range"
-                    min={0.05}
-                    max={1}
-                    step={0.05}
-                    value={renderOpacity}
-                    onChange={(e) => setRenderOpacity(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{renderOpacity.toFixed(2)}</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Clip depth:
-                  <input
-                    type="range"
-                    min={0}
-                    max={2}
-                    step={0.05}
-                    value={clipDepth}
-                    onChange={(e) => setClipDepth(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{clipDepth.toFixed(2)}</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Azimuth:
-                  <input
-                    type="range"
-                    min={-180}
-                    max={180}
-                    step={1}
-                    value={clipAzimuth}
-                    onChange={(e) => setClipAzimuth(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{clipAzimuth} deg</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Elevation:
-                  <input
-                    type="range"
-                    min={-90}
-                    max={90}
-                    step={1}
-                    value={clipElevation}
-                    onChange={(e) => setClipElevation(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{clipElevation} deg</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Illumination:
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={renderIllumination}
-                    onChange={(e) => setRenderIllumination(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{renderIllumination.toFixed(2)}</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Gradient:
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={gradientOpacity}
-                    onChange={(e) => setGradientOpacity(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{gradientOpacity.toFixed(2)}</span>
-                </label>
-                <label className="font-mono text-slate-300 flex items-center gap-3">
-                  Silhouette:
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={renderSilhouette}
-                    onChange={(e) => setRenderSilhouette(Number(e.target.value))}
-                    className="accent-cyan-500 h-2 w-full cursor-pointer"
-                  />
-                  <span className="text-cyan-400 font-bold font-mono text-xs">{renderSilhouette.toFixed(2)}</span>
-                </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Opacity:
+                   <input
+                     type="range"
+                     min={0.05}
+                     max={1}
+                     step={0.05}
+                     value={renderOpacity}
+                     onChange={(e) => setRenderOpacity(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{renderOpacity.toFixed(2)}</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Clip depth:
+                   <input
+                     type="range"
+                     min={0}
+                     max={2}
+                     step={0.05}
+                     value={clipDepth}
+                     onChange={(e) => setClipDepth(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{clipDepth.toFixed(2)}</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Azimuth:
+                   <input
+                     type="range"
+                     min={-180}
+                     max={180}
+                     step={1}
+                     value={clipAzimuth}
+                     onChange={(e) => setClipAzimuth(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{clipAzimuth} deg</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Elevation:
+                   <input
+                     type="range"
+                     min={-90}
+                     max={90}
+                     step={1}
+                     value={clipElevation}
+                     onChange={(e) => setClipElevation(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{clipElevation} deg</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Illumination:
+                   <input
+                     type="range"
+                     min={0}
+                     max={1}
+                     step={0.05}
+                     value={renderIllumination}
+                     onChange={(e) => setRenderIllumination(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{renderIllumination.toFixed(2)}</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Gradient:
+                   <input
+                     type="range"
+                     min={0}
+                     max={1}
+                     step={0.05}
+                     value={gradientOpacity}
+                     onChange={(e) => setGradientOpacity(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{gradientOpacity.toFixed(2)}</span>
+                 </label>
+                 <label className="font-mono text-slate-300 flex items-center gap-3 text-sm">
+                   Silhouette:
+                   <input
+                     type="range"
+                     min={0}
+                     max={1}
+                     step={0.05}
+                     value={renderSilhouette}
+                     onChange={(e) => setRenderSilhouette(Number(e.target.value))}
+                     className="accent-cyan-500 h-3 w-full cursor-pointer"
+                   />
+                   <span className="text-cyan-400 font-bold font-mono text-sm">{renderSilhouette.toFixed(2)}</span>
+                 </label>
               </>
             )}
           </div>
@@ -556,19 +557,19 @@ export default function MRIViewerNiiVue({
               : "bg-black/40 rounded-xl border border-cyan-500/10 p-3 flex flex-col relative"
           }
         >
-          <button
-            type="button"
-            onClick={handleFullscreenToggle}
-            className="absolute top-3 right-3 z-10 flex items-center justify-center w-9 h-9 rounded-md border border-cyan-500/20 bg-[#0f1117]/80 text-cyan-200 hover:border-cyan-500/60"
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            <span className="material-symbols-outlined text-[18px]">
-              {isFullscreen ? "close_fullscreen" : "fullscreen"}
-            </span>
+                             <button
+                                 type="button"
+                                 onClick={handleFullscreenToggle}
+                                 className="absolute top-3 right-3 z-10 flex items-center justify-center w-10 h-10 rounded-md border border-cyan-500/20 bg-[#0f1117]/80 text-cyan-200 hover:border-cyan-500/60"
+                                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                                 title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                             >
+                                 <span className="material-symbols-outlined text-[24px]">
+                                     {isFullscreen ? "close_fullscreen" : "fullscreen"}
+                                 </span>
           </button>
-          {loading && <div className="text-cyan-400 font-mono mb-2">Loading MRI data...</div>}
-          {error && <div className="text-red-400 font-mono mb-2">{error}</div>}
+         {loading && <div className="text-cyan-400 font-mono mb-2 text-sm">Loading MRI data...</div>}
+         {error && <div className="text-red-400 font-mono mb-2 text-sm">{error}</div>}
           <canvas ref={canvasRef} className="w-full flex-1 rounded-xl bg-black border border-cyan-500/10 shadow-inner" />
         </div>
       </div>
