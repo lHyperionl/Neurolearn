@@ -30,7 +30,7 @@ export default function TestsListPage() {
     return <div className="p-6">No tests found.</div>;
 
   return (
-    <div className="relative">
+    <div className="relative overflow-x-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 -right-32 w-72 h-72 bg-cyan-500/10 blur-[140px]" />
         <div className="absolute top-1/3 -left-20 w-48 h-48 bg-amber-500/10 blur-[120px]" />

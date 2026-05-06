@@ -13,13 +13,21 @@ interface QuestionInput {
   participant_id: string;
   text: string;
   answers: AnswerInput[];
+  selected_diagnosis?: string;
 }
 
 export default function CreateTestPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState<QuestionInput[]>([]);
-  const [participants, setParticipants] = useState<string[]>([]);
+  const [allParticipants, setAllParticipants] = useState<string[]>([]);
+  const [diagnoses, setDiagnoses] = useState<
+    { diagnosis_id: number; code: string; name: string; signature: string }[]
+  >([]);
+  const [groupedCases, setGroupedCases] = useState<Record<string, string[]>>(
+    {},
+  );
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"error" | "success" | null>(
@@ -27,14 +35,30 @@ export default function CreateTestPage() {
   );
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/participants/all")
-      .then((r) => r.json())
-      .then((data) => setParticipants(data || []))
-      .catch(() => setParticipants([]));
+    // Fetch diagnoses, grouped cases and participants
+    const base = "http://127.0.0.1:8000";
+
+    Promise.all([
+      fetch(`${base}/diagnoses`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`${base}/cases/grouped`).then((r) => (r.ok ? r.json() : {})),
+      fetch(`${base}/participants/all`).then((r) => (r.ok ? r.json() : [])),
+    ])
+      .then(([diagData, groupedData, parts]) => {
+        setDiagnoses(diagData || []);
+        setGroupedCases(groupedData || {});
+        setAllParticipants(parts || []);
+
+        // no global participant list; questions will filter per-question
+      })
+      .catch(() => {
+        setDiagnoses([]);
+        setGroupedCases({});
+        setAllParticipants([]);
+      });
   }, []);
 
   const newEmptyQuestion = (): QuestionInput => ({
-    participant_id: participants[0] || "",
+    participant_id: allParticipants[0] || "",
     text: "",
     answers: [
       { text: "", is_correct: false },
@@ -42,6 +66,7 @@ export default function CreateTestPage() {
       { text: "", is_correct: false },
       { text: "", is_correct: false },
     ],
+    selected_diagnosis: "ALL",
   });
 
   const addQuestion = () => setQuestions((q) => [...q, newEmptyQuestion()]);
@@ -213,8 +238,8 @@ export default function CreateTestPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="md:col-span-2">
+                <div className="grid grid-cols-1 gap-4 mb-4">
+                  <div>
                     <label className="block text-sm font-medium mb-1">
                       Question text
                     </label>
@@ -228,24 +253,60 @@ export default function CreateTestPage() {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Participant
-                    </label>
-                    <select
-                      value={q.participant_id}
-                      onChange={(e) =>
-                        updateQuestion(qi, { participant_id: e.target.value })
-                      }
-                      className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
-                    >
-                      <option value="">Select</option>
-                      {participants.map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Diagnosis
+                      </label>
+                      <select
+                        value={q.selected_diagnosis ?? "ALL"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const filtered =
+                            val === "ALL"
+                              ? allParticipants
+                              : groupedCases[val] || [];
+                          updateQuestion(qi, {
+                            selected_diagnosis: val,
+                            participant_id: filtered[0] || "",
+                          });
+                        }}
+                        className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
+                      >
+                        <option value="ALL">All diagnoses</option>
+                        {diagnoses.map((d) => (
+                          <option
+                            key={d.diagnosis_id}
+                            value={String(d.diagnosis_id)}
+                          >
+                            {d.code} - {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">
+                        Participant
+                      </label>
+                      <select
+                        value={q.participant_id}
+                        onChange={(e) =>
+                          updateQuestion(qi, { participant_id: e.target.value })
+                        }
+                        className="block w-full text-sm text-slate-200 bg-[#0b0c0f] border border-slate-700 rounded-md p-2"
+                      >
+                        <option value="">Select</option>
+                        {(q.selected_diagnosis === "ALL"
+                          ? allParticipants
+                          : groupedCases[q.selected_diagnosis || ""] || []
+                        ).map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
 
