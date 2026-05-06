@@ -4,6 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import { ChatMessage } from "@/lib/mock-data";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { DiagnosisInfo } from "./DiagnosisCard";
+
+interface PatientInfo {
+    participant_id?: string;
+    diagnosis?: string;
+    age?: string;
+    gender?: string;
+}
+
+interface ChatPanelProps {
+    patientInfo?: PatientInfo | null;
+    diagnosisInfo?: DiagnosisInfo | null;
+    currentSequence?: string;
+}
 
 const INITIAL_MESSAGE: ChatMessage = {
     id: "1",
@@ -13,7 +27,11 @@ const INITIAL_MESSAGE: ChatMessage = {
     timestamp: new Date(),
 };
 
-const ChatPanel = () => {
+const ChatPanel = ({
+    patientInfo,
+    diagnosisInfo,
+    currentSequence,
+}: ChatPanelProps) => {
     const [messages, setMessages] = useState<ChatMessage[]>([INITIAL_MESSAGE]);
     const [inputValue, setInputValue] = useState("");
     const [isThinking, setIsThinking] = useState(false);
@@ -34,6 +52,19 @@ const ChatPanel = () => {
     const handleSend = async () => {
         if (!inputValue.trim()) return;
 
+        // Skip sending if we don't have enough context yet
+        if (!diagnosisInfo?.name) {
+            const errorMessage: ChatMessage = {
+                id: Date.now().toString(),
+                role: "ai",
+                content:
+                    "I'm still loading the case data. Please wait a moment...",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
+            return;
+        }
+
         const newMessage: ChatMessage = {
             id: Date.now().toString(),
             role: "student",
@@ -50,7 +81,14 @@ const ChatPanel = () => {
             const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ messages: updatedMessages }),
+                body: JSON.stringify({
+                    messages: updatedMessages,
+                    context: {
+                        patient: patientInfo,
+                        diagnosis: diagnosisInfo,
+                        currentSequence: currentSequence,
+                    },
+                }),
             });
 
             const data = await response.json();

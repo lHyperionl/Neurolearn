@@ -42,7 +42,9 @@ const getSequenceLabel = (fileName?: string | null) => {
 export default function LearnCasePage() {
     const params = useParams<{ caseId: string }>();
     const router = useRouter();
-    const selectedCase = Array.isArray(params.caseId) ? params.caseId[0] : params.caseId;
+    const selectedCase = Array.isArray(params.caseId)
+        ? params.caseId[0]
+        : params.caseId;
 
     const [cases, setCases] = useState<string[]>([]);
     const [caseListLoading, setCaseListLoading] = useState(false);
@@ -59,7 +61,9 @@ export default function LearnCasePage() {
     const [patientLoading, setPatientLoading] = useState(false);
     const [patientError, setPatientError] = useState<string | null>(null);
 
-    const [diagnosisInfo, setDiagnosisInfo] = useState<DiagnosisInfo | null>(null);
+    const [diagnosisInfo, setDiagnosisInfo] = useState<DiagnosisInfo | null>(
+        null,
+    );
     const [diagnosisLoading, setDiagnosisLoading] = useState(false);
     const [diagnosisError, setDiagnosisError] = useState<string | null>(null);
     const [showDiagnosis, setShowDiagnosis] = useState(false);
@@ -99,7 +103,10 @@ export default function LearnCasePage() {
                       ? data.files
                       : [];
                 setFiles(nextFiles);
-                setOverlayFile(nextFiles.find((file: string) => isOverlayFile(file)) ?? null);
+                setOverlayFile(
+                    nextFiles.find((file: string) => isOverlayFile(file)) ??
+                        null,
+                );
                 setSelectedFile(pickDefaultFile(nextFiles));
                 setCaseLoading(false);
             })
@@ -174,19 +181,23 @@ export default function LearnCasePage() {
 
     const sequenceLabel = getSequenceLabel(selectedFile);
     const viewLabel = "Interactive";
-    const hasOverlay = Boolean(overlayFile && selectedFile && overlayFile !== selectedFile);
+    const hasOverlay = Boolean(
+        overlayFile && selectedFile && overlayFile !== selectedFile,
+    );
 
     const handleNextCase = () => {
         if (!cases.length || !selectedCase) return;
         const currentIndex = cases.indexOf(selectedCase);
-        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % cases.length : 0;
+        const nextIndex =
+            currentIndex >= 0 ? (currentIndex + 1) % cases.length : 0;
         router.push(`/learn/${cases[nextIndex]}`);
     };
 
     const handlePreviousCase = () => {
         if (!cases.length || !selectedCase) return;
         const currentIndex = cases.indexOf(selectedCase);
-        const previousIndex = currentIndex > 0 ? currentIndex - 1 : cases.length - 1;
+        const previousIndex =
+            currentIndex > 0 ? currentIndex - 1 : cases.length - 1;
         router.push(`/learn/${cases[previousIndex]}`);
     };
 
@@ -255,40 +266,56 @@ export default function LearnCasePage() {
                                 </div>
                             </div>
                             {caseListLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading cases...</div>
+                                <div className="text-xs font-mono text-cyan-400">
+                                    Loading cases...
+                                </div>
                             )}
                             {caseListError && (
-                                <div className="text-xs font-mono text-red-400">{caseListError}</div>
+                                <div className="text-xs font-mono text-red-400">
+                                    {caseListError}
+                                </div>
                             )}
                             {caseLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading case data...</div>
+                                <div className="text-xs font-mono text-cyan-400">
+                                    Loading case data...
+                                </div>
                             )}
                             {caseError && (
-                                <div className="text-xs font-mono text-red-400">{caseError}</div>
+                                <div className="text-xs font-mono text-red-400">
+                                    {caseError}
+                                </div>
                             )}
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Case ID</div>
+                                <div className="text-[9px] font-mono text-slate-500 uppercase">
+                                    Case ID
+                                </div>
                                 <div className="text-xs font-mono text-slate-200">
                                     {selectedCase}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Sequence</div>
+                                <div className="text-[9px] font-mono text-slate-500 uppercase">
+                                    Sequence
+                                </div>
                                 <div className="text-xs font-mono text-slate-200">
                                     {sequenceLabel}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">View</div>
+                                <div className="text-[9px] font-mono text-slate-500 uppercase">
+                                    View
+                                </div>
                                 <div className="text-xs font-mono text-slate-200">
                                     {viewLabel}
                                 </div>
                             </div>
                             <div className="bg-[#1a1c1f] border border-[#3c494e] p-3">
-                                <div className="text-[9px] font-mono text-slate-500 uppercase">Mask</div>
+                                <div className="text-[9px] font-mono text-slate-500 uppercase">
+                                    Mask
+                                </div>
                                 <div className="text-xs font-mono text-slate-200">
                                     {hasOverlay ? "Available" : "None"}
                                 </div>
@@ -302,10 +329,16 @@ export default function LearnCasePage() {
                                     patientInfo={
                                         patientInfo
                                             ? {
-                                                  participantId: patientInfo.participant_id ?? selectedCase,
-                                                  diagnosis: patientInfo.diagnosis ?? "n/a",
+                                                  participantId:
+                                                      patientInfo.participant_id ??
+                                                      selectedCase,
+                                                  diagnosis:
+                                                      patientInfo.diagnosis ??
+                                                      "n/a",
                                                   age: patientInfo.age ?? "n/a",
-                                                  gender: patientInfo.gender ?? "n/a",
+                                                  gender:
+                                                      patientInfo.gender ??
+                                                      "n/a",
                                               }
                                             : null
                                     }
@@ -325,9 +358,13 @@ export default function LearnCasePage() {
                                                 ? "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-amber-500 text-white border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]"
                                                 : "px-4 py-2 rounded-md font-mono border transition-colors text-xs bg-[#181b22] text-amber-400 border-amber-500/30 hover:bg-amber-500/10"
                                         }
-                                        onClick={() => setShowOverlay((value) => !value)}
+                                        onClick={() =>
+                                            setShowOverlay((value) => !value)
+                                        }
                                     >
-                                        {showOverlay ? "Hide segmentation" : "Show segmentation"}
+                                        {showOverlay
+                                            ? "Hide segmentation"
+                                            : "Show segmentation"}
                                     </button>
                                 )}
                                 {imageFiles.length > 0 && (
@@ -340,7 +377,9 @@ export default function LearnCasePage() {
                                                         ? "px-3 py-1 rounded-md font-mono border transition-colors text-[10px] bg-cyan-500 text-white border-cyan-500"
                                                         : "px-3 py-1 rounded-md font-mono border transition-colors text-[10px] bg-[#181b22] text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10"
                                                 }
-                                                onClick={() => setSelectedFile(file)}
+                                                onClick={() =>
+                                                    setSelectedFile(file)
+                                                }
                                             >
                                                 {file}
                                             </button>
@@ -364,29 +403,40 @@ export default function LearnCasePage() {
                                 </h3>
                                 <button
                                     type="button"
-                                    onClick={() => setShowDiagnosis((value) => !value)}
+                                    onClick={() =>
+                                        setShowDiagnosis((value) => !value)
+                                    }
                                     className="px-3 py-1 text-[10px] font-mono uppercase border border-[#3c494e] text-slate-300 hover:border-[#a8e8ff]/60"
                                 >
                                     {showDiagnosis ? "Hide" : "Show"}
                                 </button>
                             </div>
                             {diagnosisLoading && (
-                                <div className="text-xs font-mono text-cyan-400">Loading diagnosis...</div>
+                                <div className="text-xs font-mono text-cyan-400">
+                                    Loading diagnosis...
+                                </div>
                             )}
                             {diagnosisError && (
-                                <div className="text-xs font-mono text-red-400">{diagnosisError}</div>
+                                <div className="text-xs font-mono text-red-400">
+                                    {diagnosisError}
+                                </div>
                             )}
                             {showDiagnosis && diagnosisInfo && (
                                 <DiagnosisCard diagnosis={diagnosisInfo} />
                             )}
                             {!showDiagnosis && (
                                 <div className="bg-[#1e2023] border border-[#3c494e] p-4 text-xs text-slate-400 font-mono">
-                                    Diagnosis is hidden. Use the toggle to reveal details.
+                                    Diagnosis is hidden. Use the toggle to
+                                    reveal details.
                                 </div>
                             )}
                         </div>
                         <div className="flex-1 min-h-0 flex flex-col">
-                            <ChatPanel />
+                            <ChatPanel
+                                patientInfo={patientInfo}
+                                diagnosisInfo={diagnosisInfo}
+                                currentSequence={sequenceLabel}
+                            />
                         </div>
                     </motion.div>
                 </div>
