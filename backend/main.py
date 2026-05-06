@@ -78,7 +78,6 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data")
 PARTICIPANTS_PATH = os.path.join(BASE_DIR, "docs", "participants.tsv")
-DIAGNOSES_PATH = os.path.join(BASE_DIR, "docs", "diagnoses.json")
 
 Base.metadata.create_all(bind=engine)
 
@@ -111,13 +110,14 @@ def list_cases():
 @app.get("/cases/grouped")
 def list_cases_grouped(db: Session = Depends(get_db)):
     try:
-        # Získame všetkých participantov a ich diagnózy
+        # Získame všetkých participantov (SQLAlchemy relationship umožňuje prístup k diagnosis)
         participants = db.query(Participant).all()
         
         # Inicializujeme s kategóriou ALL
         grouped = {"ALL": []}
         for p in participants:
-            diag = p.diagnosis_id if p.diagnosis_id else "Unknown"
+            # Použijeme diagnosis code namiesto ID (p.diagnosis je relationship)
+            diag = p.diagnosis.code if p.diagnosis else "Unknown"
             if diag not in grouped:
                 grouped[diag] = []
             grouped[diag].append(p.participant_id)
@@ -383,18 +383,6 @@ def participant_nifti(participant_id: str):
         raise HTTPException(status_code=500, detail="Failed to get nifti url")
 
 
-def load_diagnoses() -> dict:
-    if not os.path.exists(DIAGNOSES_PATH):
-        return {}
-    try:
-        with open(DIAGNOSES_PATH, "r", encoding="utf-8") as file:
-            data = json.load(file)
-            if isinstance(data, dict):
-                return data
-            return {}
-    except json.JSONDecodeError as exc:
-        raise HTTPException(status_code=500, detail=f"Invalid diagnoses.json: {exc}")
-
 @app.get("/diagnoses")
 def list_diagnoses(db: Session = Depends(get_db)):
     """Return all diagnoses from the database."""
@@ -406,6 +394,11 @@ def list_diagnoses(db: Session = Depends(get_db)):
                 "code": d.code,
                 "name": d.name,
                 "signature": d.signature,
+                "grade": d.grade or "N/A",
+                "tags": json.loads(d.tags) if d.tags else [],
+                "description": d.description or "",
+                "keyFeatures": json.loads(d.key_features) if d.key_features else [],
+                "differentials": json.loads(d.differentials) if d.differentials else [],
             }
             for d in diagnoses
         ]
@@ -418,6 +411,12 @@ class DiagnosisCreate(BaseModel):
     code: str
     name: str
     signature: str
+    # New fields to match JSON structure
+    grade: str = "N/A"
+    tags: list[str] = []  # JSON array
+    description: str = ""
+    key_features: list[str] = []  # JSON array
+    differentials: list[str] = []  # JSON array
 
 
 @app.post("/diagnoses")
@@ -435,7 +434,16 @@ def create_diagnosis(payload: DiagnosisCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Diagnosis code already exists")
 
     try:
-        diag = Diagnosis(code=code, name=name, signature=signature)
+        diag = Diagnosis(
+            code=code,
+            name=name,
+            signature=signature,
+            grade=payload.grade or "N/A",
+            tags=json.dumps(payload.tags) if payload.tags else "[]",
+            description=payload.description or "",
+            key_features=json.dumps(payload.key_features) if payload.key_features else "[]",
+            differentials=json.dumps(payload.differentials) if payload.differentials else "[]",
+        )
         db.add(diag)
         db.commit()
         db.refresh(diag)
@@ -444,6 +452,11 @@ def create_diagnosis(payload: DiagnosisCreate, db: Session = Depends(get_db)):
             "code": diag.code,
             "name": diag.name,
             "signature": diag.signature,
+            "grade": diag.grade,
+            "tags": json.loads(diag.tags) if diag.tags else [],
+            "description": diag.description,
+            "keyFeatures": json.loads(diag.key_features) if diag.key_features else [],
+            "differentials": json.loads(diag.differentials) if diag.differentials else [],
         }
     except Exception as e:
         logger.error(f"Failed to create diagnosis: {e}")
@@ -574,15 +587,27 @@ def get_test(test_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Failed to get test")
 
 @app.get("/diagnoses/{diagnosis_key}")
-def get_diagnosis_info(diagnosis_key: str):
-    diagnoses = load_diagnoses()
-    key = diagnosis_key.strip()
-    if key in diagnoses:
-        return diagnoses[key]
-    key_upper = key.upper()
-    if key_upper in diagnoses:
-        return diagnoses[key_upper]
-    raise HTTPException(status_code=404, detail="Diagnosis not found")
+def get_diagnosis_info(diagnosis_key: str, db: Session = Depends(get_db)):
+    """Get diagnosis by code from the database."""
+    key = diagnosis_key.strip().upper()
+    
+    # Query by code (case-insensitive)
+    diagnosis = db.query(Diagnosis).filter(Diagnosis.code == key).first()
+    
+    if diagnosis is None:
+        raise HTTPException(status_code=404, detail="Diagnosis not found")
+    
+    return {
+        "code": diagnosis.code,
+        "name": diagnosis.name,
+        "shortName": diagnosis.code,
+        "signature": diagnosis.signature or "",
+        "grade": diagnosis.grade or "N/A",
+        "tags": json.loads(diagnosis.tags) if diagnosis.tags else [],
+        "description": diagnosis.description or "",
+        "keyFeatures": json.loads(diagnosis.key_features) if diagnosis.key_features else [],
+        "differentials": json.loads(diagnosis.differentials) if diagnosis.differentials else [],
+    }
 
 
 

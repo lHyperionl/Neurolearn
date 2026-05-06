@@ -39,6 +39,11 @@ class Diagnosis(Base):
     code = Column(String(10), unique=True, nullable=False)
     name = Column(String(255), nullable=False)
     signature = Column(String, nullable=False)
+    grade = Column(String(50), nullable=True, default="N/A")
+    tags = Column(String, nullable=True, default="[]")  # JSON array stored as string
+    description = Column(String, nullable=True, default="")
+    key_features = Column(String, nullable=True, default="[]")  # JSON array stored as string
+    differentials = Column(String, nullable=True, default="[]")  # JSON array stored as string
 
     participants = relationship(
         "Participant",
