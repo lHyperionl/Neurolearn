@@ -312,7 +312,7 @@ export default function EditTestPage() {
                         {diagnoses.map((d) => (
                           <option
                             key={d.diagnosis_id}
-                            value={String(d.diagnosis_id)}
+                            value={d.code}
                           >
                             {d.code} - {d.name}
                           </option>
