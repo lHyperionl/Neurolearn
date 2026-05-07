@@ -447,34 +447,6 @@ export default function InteractiveMRIViewer({
                 </div>
             </div>
 
-            {(patientLoading || patientError || patientInfo) && (
-                <div className="mb-4 rounded-lg border border-cyan-500/10 bg-[#0f1117] p-3">
-                     <div className="font-mono text-sm text-slate-300 mb-2">Patient</div>
-                     {patientLoading && (
-                         <div className="text-cyan-400 font-mono text-sm">Loading...</div>
-                     )}
-                     {patientError && (
-                         <div className="text-red-400 font-mono text-sm">{patientError}</div>
-                     )}
-                     {patientInfo && !patientLoading && !patientError && (
-                         <div className="space-y-1">
-                             <div className="text-slate-300 font-mono text-sm">
-                                 ID: <span className="text-cyan-300">{patientInfo.participantId || "n/a"}</span>
-                             </div>
-                             <div className="text-slate-300 font-mono text-sm">
-                                 Diagnosis: <span className="text-cyan-300">{patientInfo.diagnosis || "n/a"}</span>
-                             </div>
-                             <div className="text-slate-300 font-mono text-sm">
-                                 Age: <span className="text-cyan-300">{patientInfo.age || "n/a"}</span>
-                             </div>
-                             <div className="text-slate-300 font-mono text-sm">
-                                 Gender: <span className="text-cyan-300">{patientInfo.gender || "n/a"}</span>
-                             </div>
-                         </div>
-                     )}
-                </div>
-            )}
-
             {/* Main View Area */}
             <div className="relative flex-1 bg-black overflow-hidden rounded-lg border border-[#3c494e]/50">
                 <canvas

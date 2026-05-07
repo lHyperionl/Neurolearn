@@ -422,7 +422,7 @@ class DiagnosisCreate(BaseModel):
 @app.post("/diagnoses")
 def create_diagnosis(payload: DiagnosisCreate, db: Session = Depends(get_db)):
     """Create a new diagnosis record."""
-    code = payload.code.strip()
+    code = payload.code.strip().upper()
     name = payload.name.strip()
     signature = payload.signature.strip()
 
