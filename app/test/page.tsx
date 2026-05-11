@@ -36,13 +36,22 @@ export default function TestChooser() {
               <div className="text-sm text-slate-400 mt-2">Start a randomized test that presents cases and answer choices drawn from the dataset.</div>
             </Link>
 
-            <Link
-              href="/test/list"
-              className="block p-6 bg-[#14171c]/80 border border-[#3c494e] rounded-md hover:shadow-lg transition-shadow"
-            >
-              <div className="font-bold text-lg">Browse Tests</div>
-              <div className="text-sm text-slate-400 mt-2">View, edit or take saved tests that map questions to specific participants.</div>
-            </Link>
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/test/list"
+                className="block p-6 bg-[#14171c]/80 border border-[#3c494e] rounded-md hover:shadow-lg transition-shadow"
+              >
+                <div className="font-bold text-lg">Browse Tests</div>
+                <div className="text-sm text-slate-400 mt-2">View, edit or take saved tests that map questions to specific participants.</div>
+              </Link>
+              <Link
+                href="/test/create"
+                className="flex items-center gap-2 px-5 py-3 font-mono text-xs uppercase tracking-widest border border-cyan-400 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition-all shadow-[0_0_20px_rgba(34,211,238,0.1)]"
+              >
+                <span className="material-symbols-outlined text-sm">add_circle</span>
+                Add Test
+              </Link>
+            </div>
           </div>
         </motion.div>
       </main>

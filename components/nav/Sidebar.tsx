@@ -12,8 +12,8 @@ interface NavItem {
 
 const mainNav: NavItem[] = [
     { icon: "dashboard", label: "Dashboard", href: "/dashboard" },
-    { icon: "psychology", label: "Anatomy", href: "/learn" },
-    { icon: "model_training", label: "Simulations", href: "/test" },
+    { icon: "psychology", label: "Cases", href: "/learn" },
+    { icon: "model_training", label: "Tests", href: "/test" },
 ];
 
 const bottomNav: NavItem[] = [
@@ -68,7 +68,12 @@ const Sidebar = () => {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-4 px-4 py-2 text-slate-500 hover:bg-[#333538] font-mono text-xs uppercase transition-colors"
+                            className={cn(
+                                "flex items-center gap-4 px-4 py-2 font-mono text-xs uppercase transition-all",
+                                isActive(item.href)
+                                    ? "bg-[#00d4ff]/10 text-[#00d4ff] border-r-2 border-[#00d4ff]"
+                                    : "text-slate-500 hover:bg-[#333538] hover:translate-x-1",
+                            )}
                         >
                             <span className="material-symbols-outlined">
                                 {item.icon}

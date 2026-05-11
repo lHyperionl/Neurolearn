@@ -8,12 +8,8 @@ const Navbar = () => {
     const pathname = usePathname();
 
     const navLinks = [
-        { name: "Learn", href: "/learn" },
-        { name: "Test Yourself", href: "/test" },
-        { name: "Add Test", href: "/test/create" },
-        { name: "Add Case", href: "/add-case" },
-        { name: "Add Diagnosis", href: "/add-diagnosis" },
-        
+        { name: "Learn", href: "/learn", icon: "school" },
+        { name: "Test Yourself", href: "/test", icon: "assignment" },
     ];
 
     return (
@@ -38,25 +34,22 @@ const Navbar = () => {
                             key={link.href}
                             href={link.href}
                             className={cn(
-                                "font-syne uppercase tracking-widest text-sm transition-colors",
+                                "font-syne uppercase tracking-widest text-sm transition-colors flex items-center gap-2",
                                 isActive
                                     ? "text-[#00d4ff] border-b-2 border-[#00d4ff] pb-1"
                                     : "text-slate-400 hover:text-[#00d4ff]",
                             )}
                         >
+                            <span className="material-symbols-outlined text-lg">
+                                {link.icon}
+                            </span>
                             {link.name}
                         </Link>
                     );
                 })}
             </nav>
 
-            <div className="flex items-center">
-                <button className="hover:bg-[#00d4ff]/10 transition-all duration-300 p-2">
-                    <span className="material-symbols-outlined text-[#00d4ff]">
-                        account_circle
-                    </span>
-                </button>
-            </div>
+            <div className="flex items-center"></div>
         </header>
     );
 };

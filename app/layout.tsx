@@ -3,6 +3,7 @@ import { Syne, JetBrains_Mono, DM_Sans, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Navbar from "@/components/nav/Navbar";
+import { SettingsProvider } from "@/components/SettingsProvider";
 
 const syne = Syne({
     subsets: ["latin"],
@@ -51,12 +52,14 @@ export default function RootLayout({
             >
                 <div className="fixed inset-0 pointer-events-none z-50 scanline opacity-[0.03]" />
                 <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.05),transparent_70%)]" />
-                <TooltipProvider>
-                    <div className="relative z-10 flex flex-col min-h-screen">
-                        <Navbar />
-                        {children}
-                    </div>
-                </TooltipProvider>
+                <SettingsProvider>
+                    <TooltipProvider>
+                        <div className="relative z-10 flex flex-col min-h-screen">
+                            <Navbar />
+                            {children}
+                        </div>
+                    </TooltipProvider>
+                </SettingsProvider>
             </body>
         </html>
     );
