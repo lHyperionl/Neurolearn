@@ -1,4 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint, Boolean, UniqueConstraint
+from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint, Boolean, UniqueConstraint, DateTime
+from datetime import datetime, timezone
 from sqlalchemy.orm import relationship
 
 try:
@@ -89,3 +90,13 @@ class Answer(Base):
     is_correct = Column(Boolean, nullable=False, default=False)
 
     question = relationship("Question", back_populates="answers")
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    type = Column(String(20), nullable=False)  # "bug" | "feature"
+    subject = Column(String(255), nullable=False)
+    body = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))

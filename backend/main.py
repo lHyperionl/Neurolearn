@@ -33,10 +33,10 @@ mimetypes.add_type('application/octet-stream', '.nii')
 
 try:
     from .database import get_db, Base, engine
-    from .models import Participant, Test, Question, Answer
+    from .models import Participant, Test, Question, Answer, Feedback
 except ImportError:
     from database import get_db, Base, engine
-    from models import Participant, Test, Question, Answer
+    from models import Participant, Test, Question, Answer, Feedback
 
 
 app = FastAPI()
@@ -721,6 +721,30 @@ async def get_case_file(case_id: str, filename: str):
     response = FileResponse(file_path, media_type=media_type)
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
+
+class FeedbackCreate(BaseModel):
+    type: str  # "bug" | "feature"
+    subject: str
+    body: str
+
+@app.post("/feedback")
+def create_feedback(payload: FeedbackCreate, db: Session = Depends(get_db)):
+    if payload.type not in ("bug", "feature"):
+        raise HTTPException(status_code=400, detail="type must be 'bug' or 'feature'")
+    if not payload.subject.strip():
+        raise HTTPException(status_code=400, detail="subject is required")
+    if not payload.body.strip():
+        raise HTTPException(status_code=400, detail="body is required")
+    entry = Feedback(type=payload.type, subject=payload.subject.strip(), body=payload.body.strip())
+    db.add(entry)
+    db.commit()
+    db.refresh(entry)
+    return {"id": entry.id, "type": entry.type, "subject": entry.subject}
+
+@app.get("/feedback")
+def list_feedback(db: Session = Depends(get_db)):
+    return db.query(Feedback).order_by(Feedback.created_at.desc()).all()
+
 
 if __name__ == "__main__":
     import uvicorn
