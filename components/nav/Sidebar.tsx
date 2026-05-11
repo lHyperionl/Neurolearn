@@ -13,7 +13,6 @@ interface NavItem {
 const mainNav: NavItem[] = [
     { icon: "dashboard", label: "Dashboard", href: "/dashboard" },
     { icon: "psychology", label: "Anatomy", href: "/learn" },
-    { icon: "biotech", label: "Pathology", href: "/pathology" },
     { icon: "model_training", label: "Simulations", href: "/test" },
 ];
 
