@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
-const openai = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY,
-    defaultHeaders: {
-        "HTTP-Referer":
-            process.env.OPENROUTER_SITE_URL || "https://neurolearn.app",
-        "X-Title": process.env.OPENROUTER_SITE_NAME || "NeuroLearn",
-    },
-});
+export const dynamic = "force-dynamic";
 
 interface ChatMessage {
     id: string;
@@ -74,6 +66,16 @@ CURRENT_SEQUENCE: ${context.currentSequence || "Not specified"}
 };
 
 export async function POST(request: NextRequest) {
+    const openai = new OpenAI({
+        baseURL: "https://openrouter.ai/api/v1",
+        apiKey: process.env.OPENROUTER_API_KEY,
+        defaultHeaders: {
+            "HTTP-Referer":
+                process.env.OPENROUTER_SITE_URL || "https://neurolearn.app",
+            "X-Title": process.env.OPENROUTER_SITE_NAME || "NeuroLearn",
+        },
+    });
+
     try {
         const body = await request.json();
         const {
