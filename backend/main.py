@@ -63,10 +63,11 @@ async def startup_event():
         except Exception as e:
             logger.error(f"❌ Failed to create /app/db directory: {e}")
 
-# Povolenie CORS (pre vývoj povolené všetko, v produkcii zmeniť)
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
