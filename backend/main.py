@@ -55,13 +55,13 @@ async def startup_event():
     else:
         logger.info("✅ OPENROUTER_API_KEY is configured.")
 
-    # Ensure DB directory exists if we're in Docker
-    if os.path.exists("/app") and not os.path.exists("/app/db"):
+    # Ensure DB directory exists inside the data volume
+    if os.path.exists("/app/data") and not os.path.exists("/app/data/db"):
         try:
-            os.makedirs("/app/db", exist_ok=True)
-            logger.info("✅ Created /app/db directory for SQLite persistence.")
+            os.makedirs("/app/data/db", exist_ok=True)
+            logger.info("✅ Created /app/data/db directory for SQLite persistence.")
         except Exception as e:
-            logger.error(f"❌ Failed to create /app/db directory: {e}")
+            logger.error(f"❌ Failed to create /app/data/db directory: {e}")
 
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 

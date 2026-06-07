@@ -3,8 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # Use persistent database path if running in Docker, otherwise local
-if os.path.exists("/app/db"):
-    DATABASE_URL = "sqlite:////app/db/maps.db"
+if os.path.exists("/app/data"):
+    DATABASE_URL = "sqlite:////app/data/db/maps.db"
 else:
     DATABASE_URL = "sqlite:///./maps.db"
 
