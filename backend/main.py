@@ -113,10 +113,13 @@ def list_cases_grouped(db: Session = Depends(get_db)):
     try:
         # Získame všetkých participantov (SQLAlchemy relationship umožňuje prístup k diagnosis)
         participants = db.query(Participant).all()
-        
+
         # Inicializujeme s kategóriou ALL
         grouped = {"ALL": []}
         for p in participants:
+            # Only include participants that have actual NIfTI files on disk
+            if not os.path.isdir(os.path.join(BASE_DATA_DIR, p.participant_id)):
+                continue
             # Použijeme diagnosis code namiesto ID (p.diagnosis je relationship)
             diag = p.diagnosis.code if p.diagnosis else "Unknown"
             if diag not in grouped:
