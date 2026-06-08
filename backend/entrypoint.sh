@@ -6,13 +6,15 @@ cd /app
 # Ensure db subdirectory exists inside the data volume
 mkdir -p /app/data/db
 
-# Download demo NIfTI cases on first start (only if not already present)
+# Download demo NIfTI cases in the background so uvicorn can start immediately
 if [ ! -d "/app/data/sub-50004" ]; then
-    echo "Downloading demo cases from GitHub Releases..."
-    wget -q "https://github.com/lHyperionl/Neurolearn/releases/download/v1.0-demo-data/demo-cases.zip" -O /tmp/demo-cases.zip
-    unzip -q /tmp/demo-cases.zip -d /app/data
-    rm /tmp/demo-cases.zip
-    echo "Demo cases ready."
+    (
+        echo "Downloading demo cases from GitHub Releases..."
+        wget -q "https://github.com/lHyperionl/Neurolearn/releases/download/v1.0-demo-data/demo-cases.zip" -O /tmp/demo-cases.zip
+        unzip -q /tmp/demo-cases.zip -d /app/data
+        rm /tmp/demo-cases.zip
+        echo "Demo cases ready."
+    ) &
 fi
 
 # Run migrations and seed data
